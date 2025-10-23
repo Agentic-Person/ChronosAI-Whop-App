@@ -59,6 +59,8 @@ whop.mcp.json
 
 # Token system (not needed for MVP OAuth deployment)
 lib/tokens/
+app/api/tokens/
+components/tokens/
 
 # Temporary files
 *.tmp
