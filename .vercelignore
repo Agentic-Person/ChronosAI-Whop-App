@@ -68,6 +68,9 @@ app/api/discord/
 
 # Feature gating (depends on MCP, not needed for MVP)
 app/api/features/
+app/api/progress/
+lib/middleware/feature-gate.ts
+lib/whop/plan-checker.ts
 
 # Temporary files
 *.tmp
