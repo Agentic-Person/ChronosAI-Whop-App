@@ -95,24 +95,42 @@ export function logDebug(message: string, context?: LogContext): void {
 
 /**
  * Log API request
+ * @param method - HTTP method (GET, POST, etc.)
+ * @param path - API endpoint path
+ * @param statusCodeOrContext - Status code (number) or context object (for backward compatibility)
+ * @param duration - Duration in milliseconds (optional)
+ * @param context - Additional log context (optional)
  */
 export function logAPIRequest(
   method: string,
   path: string,
-  statusCode: number,
-  duration: number,
+  statusCodeOrContext?: number | LogContext,
+  duration?: number,
   context?: LogContext
 ): void {
-  logger.info(
-    {
-      ...context,
-      method,
-      path,
-      statusCode,
-      duration,
-    },
-    `${method} ${path} ${statusCode} ${duration}ms`
-  );
+  // Handle backward compatibility: logAPIRequest('POST', '/api/chat', {})
+  if (typeof statusCodeOrContext === 'object' || statusCodeOrContext === undefined) {
+    logger.info(
+      {
+        ...(statusCodeOrContext as LogContext),
+        method,
+        path,
+      },
+      `${method} ${path}`
+    );
+  } else {
+    // Handle full signature: logAPIRequest('POST', '/api/chat', 200, 150, {})
+    logger.info(
+      {
+        ...context,
+        method,
+        path,
+        statusCode: statusCodeOrContext,
+        duration,
+      },
+      `${method} ${path} ${statusCodeOrContext}${duration ? ` ${duration}ms` : ''}`
+    );
+  }
 }
 
 /**
