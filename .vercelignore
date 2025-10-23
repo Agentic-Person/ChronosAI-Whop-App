@@ -69,6 +69,9 @@ app/api/discord/
 # Feature gating (depends on MCP, not needed for MVP)
 app/api/features/
 app/api/progress/
+app/api/calendar/
+app/api/intelligence/
+app/api/study-buddy/
 lib/middleware/feature-gate.ts
 lib/whop/plan-checker.ts
 
