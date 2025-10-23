@@ -81,7 +81,7 @@ lib/whop/plan-checker.ts
 
 # Creator features (not needed for MVP OAuth deployment)
 app/api/creator/
-app/dashboard/creator/videos/
+app/dashboard/creator/
 lib/creator/
 
 # Temporary files
