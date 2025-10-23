@@ -3,7 +3,7 @@
 **Project:** ChronosAI Platform (AI-Powered Video Learning Assistant)
 **Total Agents:** 15 (Agent 0 - Agent 14)
 **Total Files:** 260+ files | 51,000+ lines of code
-**Last Updated:** October 22, 2025
+**Last Updated:** October 23, 2025
 
 ---
 
@@ -601,6 +601,9 @@ AGENT 0 (Feature Gating)
 
 **Recent Updates (October 22, 2025):**
 - ✅ **NEW:** Agent 14 - Whop Integration Specialist with auto-invocation hook
+- **Recent Updates (October 23, 2025):**
+- ✅ Added agent summary links (AGENT_XX_SUMMARY.md) to this index for Agents 1, 2, 3, 4, 7, 9, 12, and 13
+- ✅ Moved and standardized agent summary files to docs/
 - ✅ Global Whop MCP server installed at `~/.mcp/servers/whop/`
 - ✅ Auto-detection hook configured for Whop-related work
 - ✅ Built 5 core dashboard pages (Landing, Dashboard, Module Detail, Video Player, Creator Videos)
