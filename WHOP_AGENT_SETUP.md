@@ -96,31 +96,35 @@ When you mention "whop" or work on Whop-related files, you'll see:
 
 ```
 🔧 **Whop Integration Detected** - Invoking Agent 14 (Whop Integration Specialist)
-⚠️ **MCP-FIRST POLICY ACTIVE** - All Whop API calls MUST use MCP server tools
+⚠️ **MCP-PREFERRED POLICY ACTIVE** - Use MCP server tools when available; Whop SDK allowed where appropriate
 ```
 
 Agent 14 will then:
-1. **ENFORCE MCP-first policy** - Read `docs/AGENT_14_MCP_POLICY.md`
+1. **Apply MCP-preferred policy (with SDK fallback)** - See `docs/AGENT_14_MCP_POLICY.md`
 2. Read the full specification from `docs/AGENT_14_WHOP_INTEGRATION.md`
 3. Check the migration checklist
 4. Help with your Whop integration task
-5. **ONLY use MCP tools** to interact with Whop API (NEVER direct API calls)
-6. Ask you if a needed MCP tool doesn't exist (will NOT write workarounds)
+5. **Prefer MCP tools** to interact with the Whop API; SDK is allowed when warranted
+6. If a needed MCP tool doesn't exist, choose between adding it or using SDK temporarily
 7. Ensure best practices (security, idempotency, etc.)
 
-### ⚠️ CRITICAL: MCP-First Policy
+### ⚠️ CRITICAL: MCP-Preferred Policy (with SDK fallback)
 
-Agent 14 is **STRICTLY FORBIDDEN** from:
-- Using `@whop/api` directly in code
-- Making fetch/axios calls to Whop endpoints
-- Writing workarounds when MCP tools are missing
-- Guessing or assuming alternative approaches
+Agent 14 should **default to MCP tools**, but MAY use the Whop SDK directly when ALL of the following are true:
+- The operation runs strictly on the server-side within the application codebase
+- Credentials are securely stored (no secrets in client-side code or logs)
+- The use case requires lower latency/streaming or has operational urgency
+- The needed capability is missing, blocked, or not yet available in the MCP server
 
-If Agent 14 needs a Whop operation that doesn't have an MCP tool, it will:
-1. **STOP immediately**
-2. **ASK you** if it should add the tool to the MCP server
-3. **WAIT for approval** before proceeding
-4. **Update MCP server FIRST**, then use the new tool
+Agent 14 must NOT:
+- Place SDK keys or calls in client-side code
+- Bypass an existing audited MCP tool without clear justification
+- Mix MCP and SDK paths within the same code path without clear boundaries
+
+If a needed Whop operation lacks an MCP tool, Agent 14 will:
+1. Prefer implementing or requesting the MCP tool addition
+2. If time-critical, use the Whop SDK directly as a temporary fallback with a clear rationale and a follow-up to backfill an MCP tool
+3. When feasible, add the MCP tool and refactor the call to use it
 
 ---
 
