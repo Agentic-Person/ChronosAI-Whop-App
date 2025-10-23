@@ -60,6 +60,7 @@ Core backend services including caching, rate limiting, job queue, monitoring, a
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_01_INFRASTRUCTURE.md`](./AGENT_01_INFRASTRUCTURE.md)
+- 📄 **Summary:** [`AGENT_01_SUMMARY.md`](./AGENT_01_SUMMARY.md)
 
 ### Code Location
 - `lib/infrastructure/cache/` - Redis client and caching service
@@ -90,6 +91,7 @@ Complete Whop OAuth integration, webhook handling, membership validation, and se
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_02_WHOP_INTEGRATION_SUMMARY.md`](./AGENT_02_WHOP_INTEGRATION_SUMMARY.md)
+- 📄 **Summary:** [`AGENT_02_SUMMARY.md`](./AGENT_02_SUMMARY.md)
 - 📄 **Setup Guide:** [`WHOP_SETUP_GUIDE.md`](./WHOP_SETUP_GUIDE.md)
 - 📄 **Quick Reference:** [`WHOP_QUICK_REFERENCE.md`](./WHOP_QUICK_REFERENCE.md)
 - 📄 **Complete Guide:** [`total-whop-integration-guide.md`](./total-whop-integration-guide.md)
@@ -125,6 +127,7 @@ Complete video upload, transcription, semantic chunking, embedding generation, a
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_03_VIDEO_PROCESSING.md`](./AGENT_03_VIDEO_PROCESSING.md)
+- 📄 **Summary:** [`AGENT_03_SUMMARY.md`](./AGENT_03_SUMMARY.md)
 
 ### Code Location
 - `lib/video/storage.ts` - S3/R2 upload service
@@ -159,6 +162,7 @@ Retrieval-Augmented Generation (RAG) chat system with vector search, context bui
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_04_RAG_CHAT_ENGINE.md`](./AGENT_04_RAG_CHAT_ENGINE.md)
 - 📄 **Integration:** [`RAG_INTEGRATION_SUMMARY.md`](./RAG_INTEGRATION_SUMMARY.md)
+- 📄 **Summary:** [`AGENT_04_SUMMARY.md`](./AGENT_04_SUMMARY.md)
 
 ### Code Location
 - `lib/rag/rag-engine.ts` - Core RAG logic
@@ -262,6 +266,7 @@ AI-powered quiz generation, code review, peer review, and project templates.
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_07_ASSESSMENT_SYSTEM.md`](./AGENT_07_ASSESSMENT_SYSTEM.md)
+- 📄 **Summary:** [`AGENT_07_SUMMARY.md`](./AGENT_07_SUMMARY.md)
 - 📄 **Examples:** [`ASSESSMENT_EXAMPLES.md`](./ASSESSMENT_EXAMPLES.md)
 
 ### Code Location
@@ -328,6 +333,7 @@ AI-powered study partner matching with compatibility algorithm and group managem
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_09_AI_STUDY_BUDDY.md`](./AGENT_09_AI_STUDY_BUDDY.md)
+- 📄 **Summary:** [`AGENT_09_SUMMARY.md`](./AGENT_09_SUMMARY.md)
 
 ### Code Location
 - `lib/study-buddy/matching-algorithm.ts` - AI compatibility scoring
@@ -426,6 +432,7 @@ Solana blockchain-based token reward system with dual XP/CHRONOS tracking and re
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_12_CHRONOS_TOKEN_SYSTEM.md`](./AGENT_12_CHRONOS_TOKEN_SYSTEM.md)
+- 📄 **Summary:** [`AGENT_12_SUMMARY.md`](./AGENT_12_SUMMARY.md)
 
 ### Code Location
 - `lib/tokens/solana-service.ts` - Blockchain operations
@@ -520,6 +527,7 @@ Complete frontend UI implementation matching Chronos AI design system with dark 
 
 ### Documentation Files
 - 📄 **Primary:** [`AGENT_13_UI_DESIGN_SYSTEM.md`](./AGENT_13_UI_DESIGN_SYSTEM.md)
+- 📄 **Summary:** [`AGENT_13_SUMMARY.md`](./AGENT_13_SUMMARY.md)
 
 ### Code Location
 - `app/page.tsx` - Landing page (255 lines)
