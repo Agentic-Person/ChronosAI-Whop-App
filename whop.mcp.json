@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "whop": {
+      "command": "node",
+      "args": [
+        "--import",
+        "tsx/esm",
+        "C:\\Users\\jimmy\\.mcp\\servers\\whop\\index.ts"
+      ],
+      "env": {
+        "WHOP_API_KEY": "${WHOP_API_KEY}"
+      }
+    }
+  }
+}

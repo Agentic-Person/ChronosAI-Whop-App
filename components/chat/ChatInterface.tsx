@@ -13,6 +13,7 @@ import { MessageInput } from './MessageInput';
 import { MessageCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 import toast from 'react-hot-toast';
+import { showRewardToast } from '@/components/student/RewardNotification';
 
 interface ChatInterfaceProps {
   sessionId?: string;
@@ -114,6 +115,11 @@ export function ChatInterface({
         const withoutTemp = prev.filter((m) => m.id !== tempUserMessage.id);
         return [...withoutTemp, tempUserMessage, aiMessage];
       });
+
+      // Show CHRONOS reward notification if tokens were awarded
+      if (data.meta?.chronos_awarded) {
+        showRewardToast(data.meta.chronos_awarded, 'chat_message');
+      }
 
     } catch (error) {
       console.error('Failed to send message:', error);

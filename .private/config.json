@@ -1,0 +1,42 @@
+{
+  "mcpServers": {
+    "desktop-commander": {
+      "command": "npx",
+      "args": [
+        "@wonderwhy-er/desktop-commander@latest"
+      ]
+    },
+    "n8n-mcp": {
+      "command": "node",
+      "args": [
+        "C:\\\\Users\\\\jimmy\\\\n8n-mcp\\\\dist\\\\mcp\\\\index.js"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "error",
+        "MCP_MODE": "stdio",
+        "DISABLE_CONSOLE_OUTPUT": "true"
+      }
+    },
+    "Roblox Studio": {
+      "args": [
+        "--stdio"
+      ],
+      "command": "D:\\Roblox\\MCPserver\\rbx-studio-mcp.exe"
+    },
+    "GitHub": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@github/mcp-server@latest"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "whop": {
+      "url": "https://mcp.pipedream.net/v2",
+      "transport": "sse"
+    }
+  }
+}

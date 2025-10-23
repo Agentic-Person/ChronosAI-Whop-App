@@ -17,6 +17,7 @@ import {
 } from '@/lib/infrastructure/errors';
 import { logAPIRequest, logInfo, logError } from '@/lib/infrastructure/monitoring/logger';
 import { measureAsync } from '@/lib/infrastructure/monitoring/performance';
+import { awardChatMessage, getBalance } from '@/lib/chronos/rewardEngine';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -73,16 +74,31 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    // 7. Log success
+    // 7. Award CHRONOS tokens for asking a question
+    let chronosBalance: number | undefined;
+    try {
+      const rewardResult = await awardChatMessage(
+        studentId,
+        creatorId,
+        response.message_id
+      );
+      chronosBalance = rewardResult.balance;
+    } catch (error) {
+      // Non-critical error - log but don't fail the request
+      logError('Failed to award chat tokens', { error, userId: user.id });
+    }
+
+    // 8. Log success
     const duration = Date.now() - startTime;
     logInfo('Chat request completed', {
       userId: user.id,
       sessionId: response.session_id,
       duration,
       confidence: response.confidence,
+      chronosAwarded: chronosBalance !== undefined,
     });
 
-    // 8. Return response
+    // 9. Return response with reward info
     const chatResponse: ChatResponse = {
       message_id: response.message_id,
       content: response.answer,
@@ -93,6 +109,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<APIResponse<ChatResponse>>({
       success: true,
       data: chatResponse,
+      meta: chronosBalance !== undefined ? {
+        chronos_awarded: 10,
+        chronos_balance: chronosBalance,
+      } : undefined,
     });
 
   } catch (error) {
