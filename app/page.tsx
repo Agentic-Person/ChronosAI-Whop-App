@@ -117,9 +117,9 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard">
+              <Link href="/api/whop/auth/login">
                 <Button size="lg" icon={ArrowRight}>
-                  Start Learning
+                  Login with Whop
                 </Button>
               </Link>
               <Link href="#features">
@@ -128,6 +128,10 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
+
+            <p className="text-sm text-text-muted mt-4">
+              Whop Integration Ready • Secure OAuth Flow
+            </p>
           </motion.div>
         </div>
       </section>
@@ -241,9 +245,9 @@ export default function LandingPage() {
             <p className="text-xl text-text-secondary mb-8">
               Join thousands of learners mastering Roblox development with AI-powered tools.
             </p>
-            <Link href="/dashboard">
+            <Link href="/api/whop/auth/login">
               <Button size="lg" icon={ArrowRight}>
-                Start Learning
+                Login with Whop
               </Button>
             </Link>
           </motion.div>

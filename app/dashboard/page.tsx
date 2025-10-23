@@ -87,8 +87,15 @@ export default function DashboardPage() {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome back!</h1>
-        <p className="text-text-secondary">Continue your learning journey</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome back!</h1>
+            <p className="text-text-secondary">Continue your learning journey</p>
+          </div>
+          <Badge variant="info" className="hidden md:flex">
+            Whop Integration Ready
+          </Badge>
+        </div>
       </motion.div>
 
       {/* Stats Grid */}

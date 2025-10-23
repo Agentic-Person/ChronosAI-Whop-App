@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
-import { Menu, Calendar, Zap, Coins, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, Calendar, Zap, Coins, ChevronRight, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { useRouter } from 'next/navigation';
 
 export interface Breadcrumb {
   label: string;
@@ -33,6 +34,20 @@ export const Header: React.FC<HeaderProps> = ({
   onMobileMenuClick,
   className,
 }) => {
+  const router = useRouter();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/whop/auth/logout', { method: 'POST' });
+      if (response.ok) {
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <header className={cn('header', className)}>
       <div className="header-left">
@@ -104,9 +119,47 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
         </Tooltip>
 
-        <Link href="/dashboard/profile" className="ml-2">
-          <Avatar src={user.avatar} alt={user.name} size="md" />
-        </Link>
+        <div className="relative ml-2">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="focus:outline-none focus:ring-2 focus:ring-accent-cyan rounded-full"
+          >
+            <Avatar src={user.avatar} alt={user.name} size="md" />
+          </button>
+
+          {showUserMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowUserMenu(false)}
+              />
+              <div className="absolute right-0 mt-2 w-48 bg-bg-card border border-border-default rounded-lg shadow-lg z-20 overflow-hidden">
+                <div className="px-4 py-3 border-b border-border-default">
+                  <p className="text-sm font-semibold text-text-primary">{user.name}</p>
+                  <p className="text-xs text-text-muted">Level {Math.floor(user.xp / 100)}</p>
+                </div>
+                <Link
+                  href="/dashboard/profile"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  <User size={16} />
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors text-left"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

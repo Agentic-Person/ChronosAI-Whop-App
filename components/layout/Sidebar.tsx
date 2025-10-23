@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronRight, Home, Book, Calendar, Trophy, Wallet, BarChart, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, Book, Calendar, Trophy, Wallet, BarChart, X, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -84,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/dashboard/student/chat' },
     { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: Trophy, label: 'Achievements', href: '/dashboard/achievements' },
     { icon: Wallet, label: 'Wallet', href: '/dashboard/wallet' },
