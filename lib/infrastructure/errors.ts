@@ -350,17 +350,29 @@ export class MissingEnvVarError extends ConfigurationError {
  */
 export class ValidationError extends InfrastructureError {
   constructor(
-    field: string,
-    message: string,
+    fieldOrMessage: string,
+    message?: string,
     details?: Record<string, any>
   ) {
-    super(
-      `Validation failed for ${field}: ${message}`,
-      'VALIDATION_ERROR',
-      400, // Bad Request
-      { field, ...details },
-      'Please check your input and try again.'
-    );
+    // Handle backward compatibility: new ValidationError('Message is required')
+    if (message === undefined) {
+      super(
+        fieldOrMessage,
+        'VALIDATION_ERROR',
+        400, // Bad Request
+        details,
+        'Please check your input and try again.'
+      );
+    } else {
+      // Handle full signature: new ValidationError('message', 'Message is required', {})
+      super(
+        `Validation failed for ${fieldOrMessage}: ${message}`,
+        'VALIDATION_ERROR',
+        400, // Bad Request
+        { field: fieldOrMessage, ...details },
+        'Please check your input and try again.'
+      );
+    }
   }
 }
 
