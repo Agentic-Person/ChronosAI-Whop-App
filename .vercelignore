@@ -73,9 +73,7 @@ app/api/calendar/
 app/api/intelligence/
 app/api/study-buddy/
 app/api/assessments/
-app/api/chat/feedback/
-app/api/chat/history/
-app/api/chat/session/
+app/api/chat/
 lib/middleware/feature-gate.ts
 lib/whop/plan-checker.ts
 
