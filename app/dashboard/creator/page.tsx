@@ -20,8 +20,19 @@ import { RecentActivity } from '@/components/creator/RecentActivity';
 import { Card } from '@/components/ui/Card';
 import { getCreatorStats, getProcessingVideos, getRecentActivity } from '@/lib/creator/analytics';
 import { retryProcessing } from '@/lib/creator/videoManager';
-import { getCompanyInfo, listMemberships, WhopCompanyInfo } from '@/lib/whop/mcp/client';
+// MCP imports disabled for MVP OAuth deployment - Whop features will be re-enabled after MCP setup
+// import { getCompanyInfo, listMemberships, WhopCompanyInfo } from '@/lib/whop/mcp/client';
 import toast from 'react-hot-toast';
+
+// Temporary type for Whop company info (will use MCP type when re-enabled)
+interface WhopCompanyInfo {
+  id: string;
+  name: string;
+  email?: string;
+  website?: string;
+  logo_url?: string;
+  description?: string;
+}
 
 interface MembershipStats {
   total: number;
@@ -63,20 +74,16 @@ export default function CreatorDashboardPage() {
     try {
       setLoading(true);
 
-      // Fetch Whop company info and memberships via MCP
-      const [statsData, processingData, activityData, companyInfo, memberships] = await Promise.all([
+      // Fetch dashboard data (Whop MCP features temporarily disabled for MVP OAuth deployment)
+      const [statsData, processingData, activityData] = await Promise.all([
         getCreatorStats(creatorId),
         getProcessingVideos(creatorId),
         getRecentActivity(creatorId, 10),
-        getCompanyInfo().catch((err) => {
-          console.error('Failed to fetch Whop company info:', err);
-          return null;
-        }),
-        listMemberships({ limit: 1000 }).catch((err) => {
-          console.error('Failed to fetch Whop memberships:', err);
-          return [];
-        }),
       ]);
+
+      // Stub Whop company info and memberships until MCP is re-enabled
+      const companyInfo = null;
+      const memberships: any[] = [];
 
       setStats(statsData);
       setProcessingVideos(processingData);
