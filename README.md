@@ -1,4 +1,4 @@
-# 🎓 Mentora Platform - AI-Powered Video Learning Assistant
+# 🎓 ChronosAI Platform - AI-Powered Video Learning Assistant
 
 > **Transform passive video courses into interactive, AI-powered learning experiences with personalized schedules, gamification, and intelligent insights.**
 
@@ -19,7 +19,7 @@ Built with parallel agent architecture - 11 specialized AI agents working in con
 
 ---
 
-## 🚀 What Makes Mentora Special
+## 🚀 What Makes ChronosAI Special
 
 This isn't just another learning platform. It's:
 
@@ -152,8 +152,8 @@ This isn't just another learning platform. It's:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Agentic-Person/Mentora-Platform.git
-cd Mentora-Platform
+git clone https://github.com/Agentic-Person/ChronosAI-Platform.git
+cd ChronosAI-Platform
 
 # Install dependencies
 npm install --legacy-peer-deps
@@ -234,7 +234,7 @@ NODE_ENV=development
 ## 📁 Project Structure
 
 ```
-Mentora-Platform/
+ChronosAI-Platform/
 ├── app/                           # Next.js 14 App Router
 │   ├── api/                       # 40+ API endpoints
 │   │   ├── chat/                  # RAG chat engine
@@ -545,10 +545,10 @@ Special thanks to the Whop team for building an incredible creator platform!
 
 ## 📞 Support
 
-- 📧 Email: support@mentora.ai
-- 💬 Discord: [Join our community](https://discord.gg/mentora)
-- 🐦 Twitter: [@MentoraPlatform](https://twitter.com/MentoraPlatform)
-- 📚 Docs: [docs.mentora.ai](https://docs.mentora.ai)
+- 📧 Email: support@chronosai.ai
+- 💬 Discord: [Join our community](https://discord.gg/chronosai)
+- 🐦 Twitter: [@ChronosAIPlatform](https://twitter.com/ChronosAIPlatform)
+- 📚 Docs: [docs.chronosai.ai](https://docs.chronosai.ai)
 
 ---
 
@@ -576,7 +576,7 @@ Special thanks to the Whop team for building an incredible creator platform!
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Agentic-Person/Mentora-Platform&type=Date)](https://star-history.com/#Agentic-Person/Mentora-Platform&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Agentic-Person/ChronosAI-Platform&type=Date)](https://star-history.com/#Agentic-Person/ChronosAI-Platform&Date)
 
 ---
 
@@ -584,6 +584,6 @@ Special thanks to the Whop team for building an incredible creator platform!
 
 **Built with ❤️ by the Agentic Person team**
 
-[Website](https://mentora.ai) • [Documentation](https://docs.mentora.ai) • [Discord](https://discord.gg/mentora) • [Twitter](https://twitter.com/MentoraPlatform)
+[Website](https://chronosai.ai) • [Documentation](https://docs.chronosai.ai) • [Discord](https://discord.gg/chronosai) • [Twitter](https://twitter.com/ChronosAIPlatform)
 
 </div>
