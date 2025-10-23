@@ -35,7 +35,7 @@ export const config = {
 
   // App
   app: {
-    name: 'Mentora',
+    name: 'ChronosAI',
     url: getOptionalEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000'),
   },
 

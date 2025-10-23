@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Mentora - AI-Powered Learning Platform",
+  title: "ChronosAI - AI-Powered Learning Platform",
   description: "Transform passive video courses into interactive, personalized learning experiences",
 };
 

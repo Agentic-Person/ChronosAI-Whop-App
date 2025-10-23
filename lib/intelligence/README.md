@@ -1,6 +1,6 @@
 # Content Intelligence Module
 
-AI-powered intelligence system for Video Wizard (Mentora) that analyzes learning patterns, detects knowledge gaps, and provides actionable insights.
+AI-powered intelligence system for Video Wizard (ChronosAI) that analyzes learning patterns, detects knowledge gaps, and provides actionable insights.
 
 ## Module Overview
 

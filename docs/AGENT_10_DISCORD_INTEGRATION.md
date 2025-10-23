@@ -33,7 +33,7 @@ The Discord integration connects your learning platform with Discord, providing:
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click "New Application"
-3. Name it "Mentora" (or your platform name)
+3. Name it "ChronosAI" (or your platform name)
 4. Go to "Bot" tab
 5. Click "Add Bot"
 6. Copy **Bot Token** → Save to `.env` as `DISCORD_BOT_TOKEN`
@@ -657,4 +657,4 @@ For issues with Discord integration:
 
 ---
 
-**ENTERPRISE feature - powered by Mentora**
+**ENTERPRISE feature - powered by ChronosAI**

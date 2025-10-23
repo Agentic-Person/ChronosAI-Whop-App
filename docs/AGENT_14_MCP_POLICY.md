@@ -1,19 +1,20 @@
-# Agent 14: MCP-First Policy Quick Reference
+# Agent 14: MCP-Preferred Policy Quick Reference
 
-## ⚠️ MANDATORY RULES - READ FIRST ⚠️
+## ⚠️ DEFAULT RULES - READ FIRST ⚠️
 
-**Agent 14 MUST follow these rules without exception:**
+**Agent 14 SHOULD follow these rules; SDK fallback is allowed under strict conditions:**
 
-### Rule #1: MCP Tools ONLY
+### Rule #1: Prefer MCP Tools
 ```
-✅ USE: mcp__whop__* tools
-❌ NEVER: @whop/api, fetch, axios to Whop endpoints
+✅ PREFER: mcp__whop__* tools
+✅ ALLOWED (fallback): @whop/api on server-side only with secure credentials
+❌ FORBID: Client-side SDK usage or leaking secrets; ad-hoc fetch/axios to Whop endpoints
 ```
 
-### Rule #2: No Workarounds
+### Rule #2: No Unjustified Workarounds
 ```
-✅ STOP and ASK user if tool missing
-❌ NEVER: Write direct API code as workaround
+✅ If tool missing: propose adding MCP tool OR a temporary server-side SDK fallback (justify)
+❌ Do NOT add direct API code without rationale and safeguards
 ```
 
 ### Rule #3: No Assumptions
@@ -22,10 +23,10 @@
 ❌ NEVER: Guess or assume alternative approaches
 ```
 
-### Rule #4: MCP Server is Sacred
+### Rule #4: MCP Server is Primary Interface
 ```
-✅ ONLY authorized interface to Whop
-❌ NEVER: Bypass or work around it
+✅ Use MCP when available; keep it the single source of truth
+❌ Do NOT bypass MCP when a suitable tool exists without clear reason
 ```
 
 ---
@@ -52,9 +53,9 @@
 
 ---
 
-## When Tool Doesn't Exist - REQUIRED RESPONSE
+## When Tool Doesn't Exist - Recommended Response
 
-**You MUST stop and respond EXACTLY like this:**
+**Respond with options and rationale:**
 
 ```
 ⚠️ MCP TOOL MISSING
@@ -62,23 +63,20 @@
 I need to perform: [describe operation]
 
 Current situation:
-- Required tool: mcp__whop__[operation_name]
-- Status: Does not exist in global MCP server
+- Desired tool: mcp__whop__[operation_name]
+- Status: Not available in global MCP server
 
-I cannot proceed without this tool. I will NOT write direct API code as a workaround.
+Proposal (pick one):
+1) Add the MCP tool (preferred, consistent, auditable)
+2) Use Whop SDK server-side as a temporary fallback (no secrets client-side; secure handling) and backfill MCP tool later
 
-Options:
-1. I can add this tool to the global MCP server at ~/.mcp/servers/whop/
-2. We can discuss an alternative approach
-
-Which would you prefer?
+Which option should I proceed with?
 ```
 
 **DO NOT:**
-- Suggest using `@whop/api` directly
-- Offer to "just this once" bypass MCP
-- Write any code that calls Whop API directly
-- Proceed without explicit user approval
+- Use SDK on the client or expose secrets
+- Bypass an existing MCP tool without justification
+- Proceed with fallback without informing the user
 
 ---
 
@@ -97,12 +95,12 @@ export async function validateMembership(id: string) {
 }
 ```
 
-### ❌ FORBIDDEN Pattern
+### ⚠️ Fallback Pattern (Server-side only, justified)
 ```typescript
-// NEVER DO THIS - Direct API call
+// Allowed only as a temporary server-side fallback with justification
 import { Whop } from '@whop/api';
 
-const whop = new Whop({ apiKey: process.env.WHOP_API_KEY });
+const whop = new Whop({ apiKey: process.env.WHOP_API_KEY! });
 const membership = await whop.memberships.retrieve(id);
 ```
 
@@ -117,13 +115,11 @@ Need Whop data?
   │   │
   │   ├─ YES → Use MCP tool ✅
   │   │
-  │   └─ NO → STOP ⚠️
-  │          └─ Ask user to add tool to MCP server
-  │             └─ Wait for approval
-  │                └─ Update MCP server FIRST
-  │                   └─ Then use new tool
+  │   └─ NO → Choose path ⚠️
+  │          ├─ Propose adding MCP tool (preferred)
+  │          └─ OR use server-side SDK fallback (with safeguards) and plan MCP backfill
   │
-  └─ Never bypass MCP server ❌
+  └─ Avoid bypassing MCP when suitable tool exists ❌
 ```
 
 ---
@@ -132,9 +128,9 @@ Need Whop data?
 
 Before submitting ANY code with Whop integration:
 
-- [ ] ✅ All Whop operations use `mcp__whop__*` tools
-- [ ] ✅ No `import { Whop } from '@whop/api'` anywhere
-- [ ] ✅ No fetch/axios calls to Whop endpoints
+- [ ] ✅ Whop operations use MCP tools when available
+- [ ] ✅ Any SDK usage is server-side only, justified, and temporary
+- [ ] ✅ No client-side secrets or direct Whop calls
 - [ ] ✅ MCP server tested and working
 - [ ] ✅ User approved any new MCP tools added
 - [ ] ✅ Documentation updated if MCP server changed
@@ -166,6 +162,6 @@ Before submitting ANY code with Whop integration:
 
 ---
 
-**MCP-FIRST IS NON-NEGOTIABLE**
+**MCP-PREFERRED IS THE DEFAULT**
 
-Print this in your mind before every Whop task.
+Favor MCP for consistency and auditability; use SDK fallback judiciously with safeguards.

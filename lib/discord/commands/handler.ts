@@ -532,7 +532,7 @@ async function handleHelpCommand(
       { name: '/notify <on|off>', value: 'Toggle Discord notifications' },
       { name: '/help', value: 'Show this help message' }
     )
-    .setFooter({ text: 'ENTERPRISE feature - powered by Mentora' });
+    .setFooter({ text: 'ENTERPRISE feature - powered by ChronosAI' });
 
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }

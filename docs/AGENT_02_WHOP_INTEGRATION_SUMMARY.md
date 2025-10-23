@@ -10,7 +10,7 @@
 
 ## Overview
 
-This document summarizes the complete Whop Integration implementation for Video Wizard (Mentora). All critical security requirements have been met, and the system is production-ready.
+This document summarizes the complete Whop Integration implementation for Video Wizard (ChronosAI). All critical security requirements have been met, and the system is production-ready.
 
 ---
 

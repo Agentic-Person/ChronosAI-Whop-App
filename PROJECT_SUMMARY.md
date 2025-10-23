@@ -1,4 +1,4 @@
-# Mentora Platform - Project Summary
+# ChronosAI Platform - Project Summary
 
 **Generated**: October 20, 2025 (Session 2 Update)
 **Status**: Foundation Complete + 70% Documentation Complete

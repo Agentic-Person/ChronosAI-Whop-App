@@ -1,6 +1,6 @@
 # 🤖 AGENTS INDEX - Complete Documentation Map
 
-**Project:** Mentora Platform (AI-Powered Video Learning Assistant)
+**Project:** ChronosAI Platform (AI-Powered Video Learning Assistant)
 **Total Agents:** 15 (Agent 0 - Agent 14)
 **Total Files:** 260+ files | 51,000+ lines of code
 **Last Updated:** October 22, 2025
@@ -668,15 +668,15 @@ This is the order agents were built during the project:
 
 | Domain | Contact | Agents Covered |
 |--------|---------|----------------|
-| Authentication & Security | auth-team@mentora.com | Agent 0, 2 |
-| Infrastructure & DevOps | devops@mentora.com | Agent 1 |
-| AI & Machine Learning | ai-team@mentora.com | Agent 4, 7, 9, 11 |
-| Video Processing | video-team@mentora.com | Agent 3 |
-| Gamification & UX | ux-team@mentora.com | Agent 5, 6 |
-| Analytics & Reporting | analytics@mentora.com | Agent 8, 11 |
-| Community & Social | community@mentora.com | Agent 9, 10 |
-| Blockchain & Payments | blockchain@mentora.com | Agent 12 |
-| UI/UX & Frontend | frontend@mentora.com | Agent 13 |
+| Authentication & Security | auth-team@chronosai.com | Agent 0, 2 |
+| Infrastructure & DevOps | devops@chronosai.com | Agent 1 |
+| AI & Machine Learning | ai-team@chronosai.com | Agent 4, 7, 9, 11 |
+| Video Processing | video-team@chronosai.com | Agent 3 |
+| Gamification & UX | ux-team@chronosai.com | Agent 5, 6 |
+| Analytics & Reporting | analytics@chronosai.com | Agent 8, 11 |
+| Community & Social | community@chronosai.com | Agent 9, 10 |
+| Blockchain & Payments | blockchain@chronosai.com | Agent 12 |
+| UI/UX & Frontend | frontend@chronosai.com | Agent 13 |
 
 ---
 
@@ -686,4 +686,4 @@ This is the order agents were built during the project:
 
 ---
 
-*For questions about this index or to suggest improvements, contact: docs@mentora.com*
+*For questions about this index or to suggest improvements, contact: docs@chronosai.com*

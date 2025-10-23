@@ -1,6 +1,6 @@
 # XP Earning Guide
 
-Quick reference for how students earn XP in Video Wizard (Mentora).
+Quick reference for how students earn XP in Video Wizard (ChronosAI).
 
 ## Core Activities
 
