@@ -74,8 +74,15 @@ app/api/intelligence/
 app/api/study-buddy/
 app/api/assessments/
 app/api/chat/feedback/
+app/api/chat/history/
+app/api/chat/session/
 lib/middleware/feature-gate.ts
 lib/whop/plan-checker.ts
+
+# Creator features (not needed for MVP OAuth deployment)
+app/api/creator/
+app/dashboard/creator/videos/
+lib/creator/
 
 # Temporary files
 *.tmp
