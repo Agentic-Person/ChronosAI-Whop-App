@@ -9,6 +9,7 @@ interface StatsCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
+  subtitle?: string;
   trend?: {
     value: number;
     label: string;
@@ -16,7 +17,7 @@ interface StatsCardProps {
   className?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, trend, className }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, subtitle, trend, className }: StatsCardProps) {
   const isPositiveTrend = trend && trend.value > 0;
   const isNegativeTrend = trend && trend.value < 0;
 
@@ -26,6 +27,9 @@ export function StatsCard({ title, value, icon: Icon, trend, className }: StatsC
         <div className="flex-1">
           <p className="text-text-muted text-sm mb-1">{title}</p>
           <p className="text-3xl font-bold mb-2">{value}</p>
+          {subtitle && (
+            <p className="text-xs text-text-muted">{subtitle}</p>
+          )}
           {trend && (
             <div className="flex items-center gap-1 text-sm">
               {isPositiveTrend && <TrendingUp className="w-4 h-4 text-accent-green" />}

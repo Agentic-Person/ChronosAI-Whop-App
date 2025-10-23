@@ -239,10 +239,16 @@ export async function deleteVideo(videoId: string): Promise<void> {
 
 /**
  * Insert a video chunk with embedding
+ * IMPORTANT: creator_id must be set for multi-tenant isolation
  */
 export async function insertChunk(
   chunk: Omit<VideoChunk, 'id' | 'created_at'>
 ): Promise<VideoChunk> {
+  // Validate creator_id is provided (multi-tenant security)
+  if (!chunk.creator_id || chunk.creator_id.trim().length === 0) {
+    throw new Error('creator_id is required for multi-tenant isolation');
+  }
+
   const { data, error } = await supabaseAdmin
     .from('video_chunks')
     .insert(chunk)
@@ -258,10 +264,18 @@ export async function insertChunk(
 
 /**
  * Batch insert video chunks
+ * IMPORTANT: All chunks must have creator_id set for multi-tenant isolation
  */
 export async function insertChunks(
   chunks: Omit<VideoChunk, 'id' | 'created_at'>[]
 ): Promise<VideoChunk[]> {
+  // Validate all chunks have creator_id (multi-tenant security)
+  chunks.forEach((chunk, index) => {
+    if (!chunk.creator_id || chunk.creator_id.trim().length === 0) {
+      throw new Error(`Chunk at index ${index} is missing creator_id (required for multi-tenant isolation)`);
+    }
+  });
+
   const { data, error } = await supabaseAdmin
     .from('video_chunks')
     .insert(chunks)
@@ -276,6 +290,8 @@ export async function insertChunks(
 
 /**
  * Get chunks for a video
+ * NOTE: This function trusts that the caller has validated access to the video
+ * For multi-tenant isolation, verify video belongs to the creator before calling
  */
 export async function getVideoChunks(videoId: string): Promise<VideoChunk[]> {
   const { data, error } = await supabaseAdmin
@@ -307,6 +323,7 @@ export async function deleteVideoChunks(videoId: string): Promise<void> {
 
 /**
  * Search chunks using vector similarity
+ * IMPORTANT: Always filters by creator_id for multi-tenant isolation
  */
 export async function searchChunks(
   queryEmbedding: number[],
@@ -314,9 +331,14 @@ export async function searchChunks(
   matchCount: number = 5,
   matchThreshold: number = 0.7
 ): Promise<ChunkSearchResult[]> {
+  // Validate creator_id is provided (multi-tenant security)
+  if (!creatorId || creatorId.trim().length === 0) {
+    throw new Error('creatorId is required for multi-tenant isolation');
+  }
+
   const { data, error } = await supabaseAdmin.rpc('match_chunks', {
     query_embedding: queryEmbedding,
-    filter_creator_id: creatorId,
+    filter_creator_id: creatorId, // REQUIRED - enforces multi-tenant isolation
     match_count: matchCount,
     match_threshold: matchThreshold,
   });
@@ -571,7 +593,7 @@ export async function isStudentEnrolled(
  */
 export async function getCreatorStudents(
   creatorId: string,
-  status: EnrollmentStatus = 'active'
+  status: EnrollmentStatus = EnrollmentStatus.ACTIVE
 ): Promise<Enrollment[]> {
   const { data, error } = await supabaseAdmin
     .from('enrollments')

@@ -1,4 +1,4 @@
-# Module 3: Assessment System (Quizzes + Projects)
+# ChronosAI - Assessment System (Quizzes + Projects)
 
 **Status:** SCAFFOLD ONLY
 **Agent:** Agent 3

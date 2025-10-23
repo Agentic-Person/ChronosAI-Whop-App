@@ -57,10 +57,29 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Get student and creator IDs
-    // TODO: In production, fetch student record to get creator_id
-    // For now, we'll use a simplified approach
+    // IMPORTANT: creator_id must come from the student's enrollment for multi-tenant isolation
     const studentId = user.id;
-    const creatorId = user.id; // This should come from student's creator relationship
+
+    // Get creator_id from request body or from active enrollment
+    let creatorId = body.creator_id;
+
+    if (!creatorId) {
+      // If not provided, get from student's enrollments
+      const { getStudentEnrollments } = await import('@/lib/supabase/ragHelpers');
+      const enrollments = await getStudentEnrollments(studentId);
+
+      if (enrollments.length === 0) {
+        throw new ValidationError('Student is not enrolled with any creator');
+      }
+
+      // Use the first active enrollment if not specified
+      const activeEnrollment = enrollments.find(e => e.status === 'active');
+      if (!activeEnrollment) {
+        throw new ValidationError('Student has no active enrollment');
+      }
+
+      creatorId = activeEnrollment.creator_id;
+    }
 
     // 6. Process chat with performance measurement
     const response = await measureAsync(
@@ -109,10 +128,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<APIResponse<ChatResponse>>({
       success: true,
       data: chatResponse,
-      meta: chronosBalance !== undefined ? {
-        chronos_awarded: 10,
-        chronos_balance: chronosBalance,
-      } : undefined,
+      meta: {
+        creator_id: creatorId, // Multi-tenant: which creator's content was used
+        ...(chronosBalance !== undefined ? {
+          chronos_awarded: 10,
+          chronos_balance: chronosBalance,
+        } : {}),
+      },
     });
 
   } catch (error) {

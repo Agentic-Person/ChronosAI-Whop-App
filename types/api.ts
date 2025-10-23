@@ -10,6 +10,7 @@ export interface ChatRequest {
   message: string;
   session_id?: string;
   context_type?: 'general' | 'project-specific' | 'quiz-help';
+  creator_id?: string; // Optional - if not provided, uses student's active enrollment
 }
 
 export interface ChatResponse {
@@ -179,4 +180,5 @@ export interface APIResponse<T = any> {
     code: string;
     message: string;
   };
+  meta?: Record<string, any>; // Optional metadata (e.g., chronos_balance, creator_id, etc.)
 }

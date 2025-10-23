@@ -1,9 +1,11 @@
 /**
  * Whop Membership Validator
  * Validates membership status with caching and plan tier extraction
+ *
+ * ⚠️ CRITICAL: Uses MCP client for ALL Whop API operations (MCP-First Policy)
  */
 
-import { whopClient } from './api-client';
+import { getMembership, WhopMembership as MCPWhopMembership } from './mcp/client';
 import { WhopPlanChecker } from './plan-checker';
 import { createClient } from '@/lib/utils/supabase-client';
 import type { WhopMembership } from '@/types/whop';
@@ -156,8 +158,8 @@ export class MembershipValidator {
     }
 
     try {
-      // Fetch fresh membership data from Whop API
-      const membership = await whopClient.getMembership(membershipId);
+      // Fetch fresh membership data from Whop API via MCP
+      const membership = await getMembership(membershipId);
 
       // Validate membership status
       if (!membership.valid) {
@@ -251,11 +253,11 @@ export class MembershipValidator {
           return null;
         }
 
-        const membership = await whopClient.getMembership(userByWhopId.membership_id);
+        const membership = await getMembership(userByWhopId.membership_id);
         return this.formatMembershipDetails(membership);
       }
 
-      const membership = await whopClient.getMembership(user.membership_id);
+      const membership = await getMembership(user.membership_id);
       return this.formatMembershipDetails(membership);
     } catch (error) {
       console.error('Error fetching membership details:', error);

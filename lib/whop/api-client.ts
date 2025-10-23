@@ -1,6 +1,13 @@
 /**
  * Whop API Client
  * Wrapper for Whop API calls with error handling and rate limiting
+ *
+ * ⚠️ DEPRECATED - DO NOT USE DIRECTLY
+ * ⚠️ This file exists for OAuth flows ONLY.
+ * ⚠️ ALL Whop data operations MUST use lib/whop/mcp/client.ts
+ * ⚠️ See AGENT_14_MCP_POLICY.md for enforcement details
+ *
+ * MCP-First Policy: Use MCP tools for ALL Whop API operations
  */
 
 import type {

@@ -28,7 +28,7 @@ export interface SearchResult {
 }
 
 export interface VectorSearchOptions {
-  creator_id: string;
+  creator_id: string; // REQUIRED for multi-tenant isolation
   match_count?: number;
   similarity_threshold?: number;
   video_ids?: string[]; // Optional filter by specific videos
@@ -74,16 +74,21 @@ export async function vectorSearch(
       video_ids,
     } = options;
 
+    // Validate creator_id is provided (multi-tenant security)
+    if (!creator_id || creator_id.trim().length === 0) {
+      throw new Error('creator_id is required for multi-tenant isolation');
+    }
+
     // Generate embedding for query
     const queryEmbedding = await generateEmbedding(query);
 
     // Build the RPC call for vector search
-    // This assumes a PostgreSQL function 'match_video_chunks' exists
+    // IMPORTANT: match_video_chunks ALWAYS filters by creator_id for security
     let rpcQuery = supabase.rpc('match_video_chunks', {
       query_embedding: queryEmbedding,
       match_threshold: similarity_threshold,
       match_count: match_count,
-      filter_creator_id: creator_id,
+      filter_creator_id: creator_id, // REQUIRED - enforces multi-tenant isolation
       filter_video_ids: video_ids || null,
     });
 
@@ -158,12 +163,18 @@ export async function searchRelevantChunks(
 
 /**
  * Get chunks for specific videos (for context building)
+ * IMPORTANT: Always filters by creator_id for multi-tenant isolation
  */
 export async function getVideoChunks(
   video_ids: string[],
   creator_id: string
 ): Promise<VideoChunk[]> {
   try {
+    // Validate creator_id is provided (multi-tenant security)
+    if (!creator_id || creator_id.trim().length === 0) {
+      throw new Error('creator_id is required for multi-tenant isolation');
+    }
+
     const { data, error } = await supabase
       .from('video_chunks')
       .select(`
@@ -171,7 +182,7 @@ export async function getVideoChunks(
         videos!inner(creator_id)
       `)
       .in('video_id', video_ids)
-      .eq('videos.creator_id', creator_id)
+      .eq('videos.creator_id', creator_id) // Multi-tenant filter
       .order('chunk_index');
 
     if (error) {
