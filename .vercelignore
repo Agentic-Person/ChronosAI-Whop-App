@@ -60,7 +60,10 @@ whop.mcp.json
 # Token system (not needed for MVP OAuth deployment)
 lib/tokens/
 app/api/tokens/
+app/api/chronos/
 components/tokens/
+app/dashboard/wallet/
+lib/chronos/
 
 # Discord integration (not needed for MVP OAuth deployment)
 lib/discord/
