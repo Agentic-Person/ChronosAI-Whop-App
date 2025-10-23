@@ -62,6 +62,13 @@ lib/tokens/
 app/api/tokens/
 components/tokens/
 
+# Discord integration (not needed for MVP OAuth deployment)
+lib/discord/
+app/api/discord/
+
+# Feature gating (depends on MCP, not needed for MVP)
+app/api/features/
+
 # Temporary files
 *.tmp
 *.temp
