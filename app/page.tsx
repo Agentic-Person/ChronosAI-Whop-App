@@ -117,11 +117,11 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/api/whop/auth/login">
+              <a href="/api/whop/auth/login">
                 <Button size="lg" icon={ArrowRight}>
                   Login with Whop
                 </Button>
-              </Link>
+              </a>
               <Link href="#features">
                 <Button size="lg" variant="secondary">
                   Learn More
@@ -245,11 +245,11 @@ export default function LandingPage() {
             <p className="text-xl text-text-secondary mb-8">
               Join thousands of learners mastering Roblox development with AI-powered tools.
             </p>
-            <Link href="/api/whop/auth/login">
+            <a href="/api/whop/auth/login">
               <Button size="lg" icon={ArrowRight}>
                 Login with Whop
               </Button>
-            </Link>
+            </a>
           </motion.div>
         </div>
       </section>
