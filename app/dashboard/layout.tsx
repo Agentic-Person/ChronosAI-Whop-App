@@ -10,7 +10,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-bg-app overflow-hidden">
       {/* Sidebar - 280px fixed width */}
-      <Sidebar />
+      <Sidebar modules={[]} />
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
