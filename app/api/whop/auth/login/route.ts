@@ -1,34 +1,35 @@
 /**
  * Whop OAuth Login Endpoint
  *
- * Initiates OAuth 2.0 flow with Whop
+ * Initiates OAuth 2.0 flow with Whop using SDK
  * Agent: Agent 14 (Whop Integration Specialist)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { WhopServerSdk } from '@whop/api';
+
+// Initialize Whop SDK
+const whopApi = WhopServerSdk({
+  appApiKey: process.env.WHOP_API_KEY!,
+  appId: process.env.NEXT_PUBLIC_WHOP_APP_ID!,
+});
 
 export async function GET(req: NextRequest) {
   try {
-    const WHOP_CLIENT_ID = process.env.WHOP_CLIENT_ID;
     const WHOP_OAUTH_REDIRECT_URI = process.env.WHOP_OAUTH_REDIRECT_URI;
 
-    if (!WHOP_CLIENT_ID || !WHOP_OAUTH_REDIRECT_URI) {
-      throw new Error('Missing Whop OAuth configuration');
+    if (!WHOP_OAUTH_REDIRECT_URI) {
+      throw new Error('Missing Whop OAuth redirect URI');
     }
 
-    // Generate state for CSRF protection
-    const state = crypto.randomUUID();
-
-    // Build Whop OAuth URL
-    const whopAuthUrl = new URL('https://whop.com/oauth');
-    whopAuthUrl.searchParams.set('client_id', WHOP_CLIENT_ID);
-    whopAuthUrl.searchParams.set('redirect_uri', WHOP_OAUTH_REDIRECT_URI);
-    whopAuthUrl.searchParams.set('response_type', 'code');
-    whopAuthUrl.searchParams.set('scope', 'openid profile email');
-    whopAuthUrl.searchParams.set('state', state);
+    // Use Whop SDK to get authorization URL
+    const { url, state } = whopApi.oauth.getAuthorizationUrl({
+      redirectUri: WHOP_OAUTH_REDIRECT_URI,
+      scope: ['read_user'],
+    });
 
     // Store state in cookie for verification
-    const response = NextResponse.redirect(whopAuthUrl.toString());
+    const response = NextResponse.redirect(url);
     response.cookies.set('whop_oauth_state', state, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

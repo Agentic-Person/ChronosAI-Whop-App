@@ -7,10 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { WhopServerSdk } from '@whop/api';
 
-// OAuth configuration
-const WHOP_CLIENT_ID = process.env.WHOP_CLIENT_ID!;
-const WHOP_CLIENT_SECRET = process.env.WHOP_CLIENT_SECRET!;
+// Initialize Whop SDK
+const whopApi = WhopServerSdk({
+  appApiKey: process.env.WHOP_API_KEY!,
+  appId: process.env.NEXT_PUBLIC_WHOP_APP_ID!,
+});
+
 const WHOP_OAUTH_REDIRECT_URI = process.env.WHOP_OAUTH_REDIRECT_URI!;
 
 export async function GET(req: NextRequest) {
@@ -44,32 +48,21 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Exchange the authorization code for an access token using direct API call
-    const tokenResponse = await fetch('https://api.whop.com/v5/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        client_id: WHOP_CLIENT_ID,
-        client_secret: WHOP_CLIENT_SECRET,
-        code,
-        redirect_uri: WHOP_OAUTH_REDIRECT_URI,
-        grant_type: 'authorization_code',
-      }),
+    // Exchange the authorization code for an access token using Whop SDK
+    const authResponse = await whopApi.oauth.exchangeCode({
+      code,
+      redirectUri: WHOP_OAUTH_REDIRECT_URI,
     });
 
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error('Code exchange failed:', tokenResponse.status, errorData);
-      throw new Error('Failed to exchange code for token');
+    if (!authResponse.ok) {
+      console.error('Code exchange failed:', authResponse.error);
+      throw new Error(`Failed to exchange code for token: ${authResponse.error?.message || 'Unknown error'}`);
     }
 
-    const tokenData = await tokenResponse.json();
-    const access_token = tokenData.access_token;
+    const { access_token } = authResponse.tokens;
 
     if (!access_token) {
-      console.error('No access token in response:', tokenData);
+      console.error('No access token in response');
       throw new Error('No access token received');
     }
 
