@@ -111,8 +111,7 @@ CREATE TABLE IF NOT EXISTS peer_review_assignments (
   completed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
 
-  -- Prevent self-review and duplicate assignments
-  CHECK (reviewer_id != (SELECT student_id FROM project_submissions WHERE id = submission_id)),
+  -- Prevent duplicate assignments (self-review check enforced in application)
   UNIQUE(submission_id, reviewer_id)
 );
 
