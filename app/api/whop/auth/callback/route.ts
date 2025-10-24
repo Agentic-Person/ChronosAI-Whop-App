@@ -7,13 +7,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { WhopServerSdk } from '@whop/api';
 
-// Initialize Whop SDK with API key and App ID
-const whop = WhopServerSdk({
-  appApiKey: process.env.WHOP_API_KEY!,
-  appId: process.env.NEXT_PUBLIC_WHOP_APP_ID!,
-});
+// OAuth configuration
+const WHOP_CLIENT_ID = process.env.WHOP_CLIENT_ID!;
+const WHOP_CLIENT_SECRET = process.env.WHOP_CLIENT_SECRET!;
+const WHOP_OAUTH_REDIRECT_URI = process.env.WHOP_OAUTH_REDIRECT_URI!;
 
 export async function GET(req: NextRequest) {
   try {
@@ -46,18 +44,34 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Exchange the authorization code for an access token
-    const authResponse = await whop.oauth.exchangeCode({
-      code,
-      redirectUri: process.env.WHOP_OAUTH_REDIRECT_URI!,
+    // Exchange the authorization code for an access token using direct API call
+    const tokenResponse = await fetch('https://api.whop.com/v5/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: WHOP_CLIENT_ID,
+        client_secret: WHOP_CLIENT_SECRET,
+        code,
+        redirect_uri: WHOP_OAUTH_REDIRECT_URI,
+        grant_type: 'authorization_code',
+      }),
     });
 
-    if (!authResponse.ok) {
-      console.error('Code exchange failed:', authResponse);
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('Code exchange failed:', tokenResponse.status, errorData);
       throw new Error('Failed to exchange code for token');
     }
 
-    const { access_token } = authResponse.tokens;
+    const tokenData = await tokenResponse.json();
+    const access_token = tokenData.access_token;
+
+    if (!access_token) {
+      console.error('No access token in response:', tokenData);
+      throw new Error('No access token received');
+    }
 
     console.log('Whop OAuth successful, access token received');
 

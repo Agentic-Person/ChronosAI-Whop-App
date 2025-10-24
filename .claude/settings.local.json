@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(vercel --prod:*)",
+      "Bash(tee:*)",
+      "Bash(supabase --version:*)",
+      "Bash(supabase link:*)",
+      "Bash(export SUPABASE_ACCESS_TOKEN=sbp_4e4b3625e75990f79b66244caf7a3a8b71267358:*)",
+      "Bash(supabase db execute:*)",
+      "Bash(supabase db push:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel env:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
