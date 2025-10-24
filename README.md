@@ -152,8 +152,8 @@ This isn't just another learning platform. It's:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Agentic-Person/ChronosAI-Platform.git
-cd ChronosAI-Platform
+git clone https://github.com/Agentic-Person/ChronosAI-Whop-App.git
+cd ChronosAI-Whop-App
 
 # Install dependencies
 npm install --legacy-peer-deps
@@ -234,7 +234,7 @@ NODE_ENV=development
 ## 📁 Project Structure
 
 ```
-ChronosAI-Platform/
+ChronosAI-Whop-App/
 ├── app/                           # Next.js 14 App Router
 │   ├── api/                       # 40+ API endpoints
 │   │   ├── chat/                  # RAG chat engine
@@ -576,7 +576,7 @@ Special thanks to the Whop team for building an incredible creator platform!
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Agentic-Person/ChronosAI-Platform&type=Date)](https://star-history.com/#Agentic-Person/ChronosAI-Platform&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Agentic-Person/ChronosAI-Whop-App&type=Date)](https://star-history.com/#Agentic-Person/ChronosAI-Whop-App&Date)
 
 ---
 
