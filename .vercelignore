@@ -85,6 +85,10 @@ app/api/creator/
 app/dashboard/creator/
 lib/creator/
 
+# Video features (not needed for MVP OAuth deployment)
+app/api/video/
+lib/video/
+
 # Temporary files
 *.tmp
 *.temp
