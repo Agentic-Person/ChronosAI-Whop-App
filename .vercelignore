@@ -57,38 +57,6 @@ mcp/
 lib/whop/mcp.disabled/
 whop.mcp.json
 
-# Token system (not needed for MVP OAuth deployment)
-lib/tokens/
-app/api/tokens/
-app/api/chronos/
-components/tokens/
-app/dashboard/wallet/
-lib/chronos/
-
-# Discord integration (not needed for MVP OAuth deployment)
-lib/discord/
-app/api/discord/
-
-# Feature gating (depends on MCP, not needed for MVP)
-app/api/features/
-app/api/progress/
-app/api/calendar/
-app/api/intelligence/
-app/api/study-buddy/
-app/api/assessments/
-app/api/chat/
-lib/middleware/feature-gate.ts
-lib/whop/plan-checker.ts
-
-# Creator features (not needed for MVP OAuth deployment)
-app/api/creator/
-app/dashboard/creator/
-lib/creator/
-
-# Video features (not needed for MVP OAuth deployment)
-app/api/video/
-lib/video/
-
 # Temporary files
 *.tmp
 *.temp
