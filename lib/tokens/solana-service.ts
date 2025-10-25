@@ -56,20 +56,22 @@ const CHRONOS_TOKEN_MINT_ADDRESS = process.env.CHRONOS_TOKEN_MINT_ADDRESS as str
 const WALLET_ENCRYPTION_KEY = process.env
   .TOKEN_WALLET_ENCRYPTION_KEY as string;
 
-// Validate required environment variables
-if (!MINT_AUTHORITY_PRIVATE_KEY) {
-  throw new Error('SOLANA_MINT_AUTHORITY_PRIVATE_KEY not configured');
-}
+// Validate required environment variables (only in runtime, not at build time)
+const validateEnvironment = () => {
+  if (!MINT_AUTHORITY_PRIVATE_KEY) {
+    throw new Error('SOLANA_MINT_AUTHORITY_PRIVATE_KEY not configured');
+  }
 
-if (!CHRONOS_TOKEN_MINT_ADDRESS) {
-  throw new Error('CHRONOS_TOKEN_MINT_ADDRESS not configured');
-}
+  if (!CHRONOS_TOKEN_MINT_ADDRESS) {
+    throw new Error('CHRONOS_TOKEN_MINT_ADDRESS not configured');
+  }
 
-if (!WALLET_ENCRYPTION_KEY || WALLET_ENCRYPTION_KEY.length !== 64) {
-  throw new Error(
-    'TOKEN_WALLET_ENCRYPTION_KEY must be a 64-character hex string'
-  );
-}
+  if (!WALLET_ENCRYPTION_KEY || WALLET_ENCRYPTION_KEY.length !== 64) {
+    throw new Error(
+      'TOKEN_WALLET_ENCRYPTION_KEY must be a 64-character hex string'
+    );
+  }
+};
 
 // ============================================================================
 // Connection Management
@@ -91,6 +93,7 @@ export function getSolanaConnection(): Connection {
  * Initialize Solana connection (explicit initialization)
  */
 export async function initializeSolana(): Promise<Connection> {
+  validateEnvironment();
   const connection = getSolanaConnection();
 
   // Test connection
@@ -134,6 +137,7 @@ export function getKeypairFromPrivateKey(privateKey: string): Keypair {
  * Get mint authority keypair (platform-controlled)
  */
 function getMintAuthorityKeypair(): Keypair {
+  validateEnvironment();
   const secretKey = bs58.decode(MINT_AUTHORITY_PRIVATE_KEY);
   return Keypair.fromSecretKey(secretKey);
 }
@@ -155,6 +159,10 @@ export async function encryptPrivateKey(
   encryptionKey: string = WALLET_ENCRYPTION_KEY
 ): Promise<string> {
   try {
+    if (!encryptionKey) {
+      throw new Error('TOKEN_WALLET_ENCRYPTION_KEY not configured');
+    }
+
     // Generate random IV
     const iv = crypto.randomBytes(IV_LENGTH);
 
@@ -192,6 +200,10 @@ export async function decryptPrivateKey(
   encryptionKey: string = WALLET_ENCRYPTION_KEY
 ): Promise<string> {
   try {
+    if (!encryptionKey) {
+      throw new Error('TOKEN_WALLET_ENCRYPTION_KEY not configured');
+    }
+
     // Split components
     const parts = encryptedKey.split(':');
     if (parts.length !== 3) {
@@ -235,6 +247,7 @@ export async function decryptPrivateKey(
  * Get CHRONOS token mint PublicKey
  */
 function getBloxTokenMint(): PublicKey {
+  validateEnvironment();
   return new PublicKey(CHRONOS_TOKEN_MINT_ADDRESS);
 }
 

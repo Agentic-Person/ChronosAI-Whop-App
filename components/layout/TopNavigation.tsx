@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Home,
@@ -66,13 +67,19 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
       'sticky top-0 z-50 w-full border-b border-border-default bg-bg-sidebar',
       className
     )}>
-      <div className="max-w-full px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-accent-cyan rounded-lg flex items-center justify-center">
-                <span className="text-2xl font-bold">C</span>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <Image
+                  src="/images/logo_brand/chronos_icon_grn.png"
+                  alt="Chronos AI"
+                  width={40}
+                  height={40}
+                  className="rounded-lg"
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg font-bold">CHRONOS AI</h1>

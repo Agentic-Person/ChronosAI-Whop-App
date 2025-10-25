@@ -48,30 +48,33 @@
 /* === CARDS === */
 .card {
   background-color: var(--bg-card);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-teal);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
+  box-shadow: var(--shadow-teal-glow);
 }
 
 .card-elevated {
   background-color: var(--bg-elevated);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-teal);
+  box-shadow: var(--shadow-teal-glow);
 }
 
 .card-outlined {
   background-color: transparent;
-  border: 2px solid var(--border-default);
+  border: 2px solid var(--border-teal);
+  box-shadow: var(--shadow-teal-glow);
 }
 
 .card-hover {
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .card-hover:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-xl);
+  border-color: var(--accent-teal);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(20, 184, 166, 0.3), 0 0 60px rgba(20, 184, 166, 0.15);
 }
 
 /* === MODULE CARDS === */

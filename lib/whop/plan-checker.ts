@@ -1,11 +1,9 @@
 /**
  * Whop Plan Checker
  * Extracts and validates plan tiers from Whop membership data
- *
- * ⚠️ CRITICAL: Uses MCP client for ALL Whop API operations (MCP-First Policy)
  */
 
-import { getMembership, listMemberships, WhopMembership as MCPWhopMembership } from './mcp/client';
+import { whopClient } from './api-client';
 import type { WhopMembership } from '@/types/whop';
 import { PlanTier } from '@/lib/features/types';
 
@@ -83,8 +81,8 @@ export class WhopPlanChecker {
    */
   static async getPlanTierByMembershipId(membershipId: string): Promise<PlanTier> {
     try {
-      // Fetch membership from Whop API via MCP
-      const membership = await getMembership(membershipId) as any;
+      // Fetch membership from Whop API
+      const membership = await whopClient.getMembership(membershipId);
 
       // Validate membership is active
       if (!membership.valid || membership.status !== 'active') {
@@ -106,8 +104,8 @@ export class WhopPlanChecker {
    */
   static async getPlanTierByUserId(whopUserId: string): Promise<PlanTier> {
     try {
-      // Fetch user's memberships via MCP
-      const memberships = await listMemberships({ userId: whopUserId }) as any[];
+      // Fetch user's memberships from Whop API
+      const memberships = await whopClient.getUserMemberships(whopUserId);
 
       // Find active membership
       const activeMembership = memberships.find(
@@ -133,7 +131,7 @@ export class WhopPlanChecker {
    */
   static async validateMembership(membershipId: string): Promise<boolean> {
     try {
-      const membership = await getMembership(membershipId) as any;
+      const membership = await whopClient.getMembership(membershipId);
 
       // Check if membership is valid and active
       if (!membership.valid || membership.status !== 'active') {
@@ -162,7 +160,7 @@ export class WhopPlanChecker {
    */
   static async getPlanExpiration(membershipId: string): Promise<Date | null> {
     try {
-      const membership = await getMembership(membershipId) as any;
+      const membership = await whopClient.getMembership(membershipId);
 
       if (membership.expires_at) {
         return new Date(membership.expires_at);

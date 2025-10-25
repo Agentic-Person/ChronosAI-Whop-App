@@ -47,7 +47,7 @@ export default async function ExperiencePage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* AI Chat Feature */}
-          <Card hover padding="lg" className="border-2 border-accent-orange/20">
+          <Card hover padding="lg" className="border-teal">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-bg-app" />
@@ -61,7 +61,7 @@ export default async function ExperiencePage({
           </Card>
 
           {/* Learning Calendar */}
-          <Card hover padding="lg" className="border-2 border-accent-purple/20">
+          <Card hover padding="lg" className="border-teal">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-secondary rounded-xl flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-bg-app" />
@@ -75,7 +75,7 @@ export default async function ExperiencePage({
           </Card>
 
           {/* Progress Tracking */}
-          <Card hover padding="lg" className="border-2 border-accent-green/20">
+          <Card hover padding="lg" className="border-teal">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-accent rounded-xl flex items-center justify-center">
                 <Trophy className="w-6 h-6 text-bg-app" />
