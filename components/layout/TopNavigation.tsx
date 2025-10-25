@@ -45,10 +45,6 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard' },
     { icon: MessageSquare, label: 'AI Chat', href: '/dashboard/student/chat' },
-    { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
-    { icon: Trophy, label: 'Achievements', href: '/dashboard/achievements' },
-    { icon: Wallet, label: 'Wallet', href: '/dashboard/wallet' },
-    { icon: BarChart, label: 'Leaderboard', href: '/dashboard/leaderboard' },
   ];
 
   const handleLogout = async () => {

@@ -72,9 +72,9 @@
 }
 
 .card-hover:hover {
-  border-color: var(--accent-teal);
+  border-color: var(--accent-orange);
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(20, 184, 166, 0.3), 0 0 60px rgba(20, 184, 166, 0.15);
+  box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.15);
 }
 
 /* === MODULE CARDS === */

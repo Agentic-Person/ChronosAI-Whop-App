@@ -46,15 +46,15 @@
     --border-hover: rgba(255, 200, 150, 0.2);
     --border-focus: var(--accent-cyan);
     --border-primary: rgba(255, 107, 53, 0.3);
-    --border-teal: rgba(20, 184, 166, 0.3);
-    --border-teal-glow: rgba(20, 184, 166, 0.15);
+    --border-teal: rgba(255, 107, 53, 0.3);
+    --border-teal-glow: rgba(255, 107, 53, 0.15);
 
     /* === SHADOWS === */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
-    --shadow-teal-glow: 0 4px 20px rgba(20, 184, 166, 0.2), 0 0 40px rgba(20, 184, 166, 0.1);
+    --shadow-teal-glow: 0 4px 20px rgba(255, 107, 53, 0.2), 0 0 40px rgba(255, 107, 53, 0.1);
 
     /* === GRADIENTS (Whop Orange/Brown Theme) === */
     --gradient-primary: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
