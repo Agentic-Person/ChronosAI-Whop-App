@@ -4,21 +4,22 @@
 
 @layer base {
   :root {
-    /* === BACKGROUNDS === */
-    --bg-app: #0a1525;
-    --bg-sidebar: #0f1e30;
-    --bg-card: #1a2942;
-    --bg-elevated: #243350;
-    --bg-hover: #2d3f5f;
+    /* === BACKGROUNDS (Whop Brown Theme) === */
+    --bg-app: #1a1410;
+    --bg-sidebar: #251e18;
+    --bg-card: #2d2620;
+    --bg-elevated: #3a332b;
+    --bg-hover: #4a3f35;
 
-    /* === ACCENTS === */
-    --accent-cyan: #00d9ff;
+    /* === ACCENTS (Whop Orange/Brown Theme) === */
+    --accent-cyan: #ff6b35;
+    --accent-orange: #ff8c42;
     --accent-green: #00ff88;
     --accent-purple: #8b5cf6;
     --accent-pink: #ec4899;
     --accent-yellow: #fbbf24;
-    --accent-orange: #f97316;
     --accent-red: #ef4444;
+    --accent-brown: #8b4513;
 
     /* === MODULE COLORS === */
     --module-1-color: #059669;
@@ -40,9 +41,10 @@
     --text-disabled: #4b5563;
 
     /* === BORDERS === */
-    --border-default: rgba(255, 255, 255, 0.1);
-    --border-hover: rgba(255, 255, 255, 0.2);
+    --border-default: rgba(255, 200, 150, 0.1);
+    --border-hover: rgba(255, 200, 150, 0.2);
     --border-focus: var(--accent-cyan);
+    --border-primary: rgba(255, 107, 53, 0.3);
 
     /* === SHADOWS === */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -50,11 +52,13 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
 
-    /* === GRADIENTS === */
-    --gradient-primary: linear-gradient(135deg, #00d9ff 0%, #0891b2 100%);
+    /* === GRADIENTS (Whop Orange/Brown Theme) === */
+    --gradient-primary: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+    --gradient-secondary: linear-gradient(135deg, #ff8c42 0%, #fbbf24 100%);
     --gradient-success: linear-gradient(135deg, #00ff88 0%, #059669 100%);
     --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    --gradient-hero: linear-gradient(135deg, #0a1525 0%, #1a2942 100%);
+    --gradient-hero: linear-gradient(135deg, #1a1410 0%, #2d2620 100%);
+    --gradient-accent: linear-gradient(135deg, #ff6b35 0%, #8b4513 100%);
 
     /* === TYPOGRAPHY === */
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -187,12 +191,12 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-cyan);
+    background: var(--accent-orange);
   }
 
   /* Selection */
   ::selection {
-    background-color: var(--accent-cyan);
+    background-color: var(--accent-orange);
     color: var(--bg-app);
   }
 

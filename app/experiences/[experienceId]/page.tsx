@@ -3,6 +3,7 @@ import { VideoCard } from '@/components/video/VideoCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { MessageSquare, Calendar, Trophy, Video } from 'lucide-react';
+import { TopNavigation } from '@/components/layout/TopNavigation';
 
 export default async function ExperiencePage({
   params,
@@ -12,30 +13,41 @@ export default async function ExperiencePage({
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('whop_access_token');
 
+  // Mock user data - in production, fetch from auth context
+  const user = {
+    name: 'Student',
+    xp: 1250,
+    chronos: 450,
+    level: 12,
+  };
+
   return (
     <div className="min-h-screen bg-bg-app">
-      {/* Header */}
+      {/* Top Navigation for Whop */}
+      <TopNavigation user={user} />
+
+      {/* Page Header */}
       <div className="bg-gradient-hero border-b border-border-primary">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gradient mb-2">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
                 Welcome to Chronos AI
               </h1>
-              <p className="text-text-secondary text-lg">
+              <p className="text-text-secondary text-base sm:text-lg">
                 Your AI-Powered Learning Assistant
               </p>
             </div>
-            <Badge variant="success">Experience: {params.experienceId}</Badge>
+            <Badge variant="success" className="hidden sm:inline-flex">Experience: {params.experienceId}</Badge>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* AI Chat Feature */}
-          <Card hover padding="lg" className="border-2 border-accent-cyan/20">
+          <Card hover padding="lg" className="border-2 border-accent-orange/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-bg-app" />
@@ -81,7 +93,7 @@ export default async function ExperiencePage({
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Video className="w-8 h-8 text-accent-cyan" />
+              <Video className="w-8 h-8 text-accent-orange" />
               <h2 className="text-3xl font-bold">Your Course Videos</h2>
             </div>
             <Badge variant="default">0 videos available</Badge>
@@ -106,7 +118,7 @@ export default async function ExperiencePage({
           <h2 className="text-2xl font-bold mb-6">What You Can Do with Chronos AI</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex gap-3">
-              <div className="w-2 h-2 bg-accent-cyan rounded-full mt-2"></div>
+              <div className="w-2 h-2 bg-accent-orange rounded-full mt-2"></div>
               <div>
                 <h3 className="font-bold mb-1">Interactive Video Learning</h3>
                 <p className="text-sm text-text-secondary">
@@ -133,7 +145,7 @@ export default async function ExperiencePage({
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-2 h-2 bg-accent-gold rounded-full mt-2"></div>
+              <div className="w-2 h-2 bg-accent-yellow rounded-full mt-2"></div>
               <div>
                 <h3 className="font-bold mb-1">Earn Rewards</h3>
                 <p className="text-sm text-text-secondary">
