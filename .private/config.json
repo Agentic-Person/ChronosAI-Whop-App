@@ -37,6 +37,9 @@
     "whop": {
       "url": "https://mcp.pipedream.net/v2",
       "transport": "sse"
+    },
+    "pipedream": {
+      "url": "https://mcp.pipedream.net/v2"
     }
   }
 }

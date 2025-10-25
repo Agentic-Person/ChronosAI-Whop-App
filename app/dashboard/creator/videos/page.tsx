@@ -14,7 +14,7 @@ import {
   Check,
   Clock,
   AlertCircle,
-  DragHandleDots2,
+  GripVertical, // Using GripVertical instead of DragHandleDots2
   Youtube,
   FolderOpen,
 } from 'lucide-react';
@@ -265,7 +265,7 @@ export default function CreatorVideosPage() {
               <div className="flex items-center gap-4">
                 {/* Drag Handle */}
                 <button className="text-text-muted hover:text-text-primary cursor-grab active:cursor-grabbing">
-                  <DragHandleDots2 className="w-5 h-5" />
+                  <GripVertical className="w-5 h-5" />
                 </button>
 
                 {/* Thumbnail */}

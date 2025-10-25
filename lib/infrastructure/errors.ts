@@ -295,6 +295,11 @@ export class FeatureGateError extends InfrastructureError {
 }
 
 /**
+ * Alias for FeatureGateError for backward compatibility
+ */
+export class FeatureNotAvailableError extends FeatureGateError {}
+
+/**
  * Plan limit exceeded errors
  */
 export class PlanLimitExceededError extends InfrastructureError {

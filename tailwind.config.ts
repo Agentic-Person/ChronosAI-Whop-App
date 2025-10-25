@@ -19,6 +19,7 @@ const config = {
     },
     extend: {
       colors: {
+        // shadcn/ui colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -52,6 +53,30 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Chronos AI custom colors
+        'bg-app': 'var(--bg-app)',
+        'bg-sidebar': 'var(--bg-sidebar)',
+        'bg-card': 'var(--bg-card)',
+        'bg-elevated': 'var(--bg-elevated)',
+        'bg-hover': 'var(--bg-hover)',
+        'accent-cyan': 'var(--accent-cyan)',
+        'accent-orange': 'var(--accent-orange)',
+        'accent-teal': 'var(--accent-teal)',
+        'accent-green': 'var(--accent-green)',
+        'accent-purple': 'var(--accent-purple)',
+        'accent-pink': 'var(--accent-pink)',
+        'accent-yellow': 'var(--accent-yellow)',
+        'accent-red': 'var(--accent-red)',
+        'accent-brown': 'var(--accent-brown)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        'text-disabled': 'var(--text-disabled)',
+        'border-default': 'var(--border-default)',
+        'border-hover': 'var(--border-hover)',
+        'border-focus': 'var(--border-focus)',
+        'border-primary': 'var(--border-primary)',
+        'border-teal': 'var(--border-teal)',
       },
       borderRadius: {
         lg: "var(--radius)",

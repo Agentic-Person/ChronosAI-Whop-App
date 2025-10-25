@@ -3,7 +3,7 @@
  * Singleton Supabase client for server-side and client-side usage
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 
 // Ensure environment variables are set
@@ -18,7 +18,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 /**
  * Client-side Supabase client (uses anon key, RLS enforced)
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -29,7 +29,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  * Server-side Supabase client (uses service role key, bypasses RLS)
  * WARNING: Only use on the server side, never expose to client
  */
-export const supabaseAdmin = createClient(
+export const supabaseAdmin = createSupabaseClient(
   supabaseUrl,
   supabaseServiceKey || supabaseAnonKey,
   {
@@ -63,4 +63,12 @@ export async function isAuthenticated(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Create a Supabase client instance
+ * This is a wrapper that returns the singleton supabase client
+ */
+export function createClient() {
+  return supabase;
 }

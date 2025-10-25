@@ -356,3 +356,8 @@ export const getUserFeatures = FeatureFlagService.getUserFeatures.bind(
 export const invalidatePlanCache = FeatureFlagService.invalidateCache.bind(
   FeatureFlagService
 );
+
+/**
+ * Check feature access (alias for hasFeatureAccess)
+ */
+export const checkFeatureAccess = hasFeatureAccess;

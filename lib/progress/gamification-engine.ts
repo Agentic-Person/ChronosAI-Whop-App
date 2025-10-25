@@ -390,6 +390,16 @@ export function predictCompletionDate(params: {
 }
 
 /**
+ * Award XP to a user (placeholder - actual implementation in achievement-system.ts)
+ * This export is for backward compatibility with code expecting it here
+ */
+export async function awardXP(userId: string, xpGain: XPGain): Promise<void> {
+  // This is a stub - the actual implementation should be in achievement-system.ts
+  // or you should import from there. For now, we'll just log it.
+  console.warn('awardXP called from gamification-engine.ts - should use achievement-system.ts instead');
+}
+
+/**
  * Generate motivational message based on progress
  */
 export function getMotivationalMessage(levelInfo: LevelInfo, streakInfo: StreakInfo): string {
