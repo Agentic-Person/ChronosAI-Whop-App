@@ -83,7 +83,7 @@ export function SessionSidebar({
           <div className="p-2">
             {Object.entries(groupedSessions).map(([dateLabel, groupSessions]) => (
               <div key={dateLabel} className="mb-4">
-                <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="px-3 mb-2 text-xs font-semibold text-text-muted uppercase tracking-wide">
                   {dateLabel}
                 </h3>
                 <div className="space-y-1">
