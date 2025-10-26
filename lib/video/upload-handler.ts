@@ -1,18 +1,18 @@
 /**
  * Video Upload Handler
  *
- * Handles video file uploads to S3/R2 with:
+ * Handles video file uploads to Supabase Storage with:
  * - Presigned URL generation
  * - File validation
- * - Plan limit enforcement
+ * - Storage limit enforcement
  * - Database record creation
+ * - Multi-tenant isolation
  */
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getSupabaseAdmin } from '@/lib/infrastructure/database/connection-pool';
 import { logInfo, logError } from '@/lib/infrastructure/monitoring/logger';
 import { inngest } from '@/lib/infrastructure/jobs/inngest-client';
+import { checkStorageLimit, updateStorageUsage } from '@/lib/features/storage-limits';
 import {
   UploadUrlRequest,
   UploadUrlResponse,
@@ -25,19 +25,11 @@ import {
 } from './types';
 
 // ============================================================================
-// S3 CLIENT CONFIGURATION
+// SUPABASE STORAGE CONFIGURATION
 // ============================================================================
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
-
-const BUCKET_NAME = process.env.AWS_S3_BUCKET!;
-const UPLOAD_URL_EXPIRATION = 15 * 60; // 15 minutes
+const STORAGE_BUCKET = 'videos';
+const UPLOAD_URL_EXPIRATION = 15 * 60; // 15 minutes in seconds
 
 // ============================================================================
 // FILE VALIDATION
@@ -90,99 +82,31 @@ export function validateVideoFile(
 }
 
 // ============================================================================
-// PLAN LIMITS
+// STORAGE HELPERS
 // ============================================================================
 
 /**
- * Get video upload limits based on plan tier
+ * Generate storage path for video file
+ * Format: /videos/{creator_id}/{video_id}/original.{ext}
  */
-export async function getVideoLimits(creatorId: string): Promise<VideoLimits> {
-  const supabase = getSupabaseAdmin();
-
-  // Get creator's plan tier
-  const { data: creator, error } = await supabase
-    .from('creators')
-    .select('subscription_tier')
-    .eq('id', creatorId)
-    .single();
-
-  if (error || !creator) {
-    throw new UploadError('Failed to fetch creator plan', { creatorId });
-  }
-
-  // Plan-based limits
-  const limits: Record<string, VideoLimits> = {
-    basic: {
-      maxFileSize: VIDEO_PROCESSING_CONSTANTS.MAX_FILE_SIZE,
-      maxDuration: 4 * 60 * 60, // 4 hours
-      maxVideos: 50,
-      allowedFormats: VIDEO_PROCESSING_CONSTANTS.ALLOWED_MIME_TYPES,
-    },
-    pro: {
-      maxFileSize: VIDEO_PROCESSING_CONSTANTS.MAX_FILE_SIZE,
-      maxDuration: 8 * 60 * 60, // 8 hours
-      maxVideos: 500,
-      allowedFormats: VIDEO_PROCESSING_CONSTANTS.ALLOWED_MIME_TYPES,
-    },
-    enterprise: {
-      maxFileSize: VIDEO_PROCESSING_CONSTANTS.MAX_FILE_SIZE,
-      maxDuration: Infinity,
-      maxVideos: Infinity,
-      allowedFormats: VIDEO_PROCESSING_CONSTANTS.ALLOWED_MIME_TYPES,
-    },
-  };
-
-  return limits[creator.subscription_tier] || limits.basic;
-}
-
-/**
- * Check if creator can upload more videos
- */
-export async function validateVideoLimits(creatorId: string): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-
-  // Get current video count
-  const { data, error } = await supabase.rpc('get_creator_video_count', {
-    p_creator_id: creatorId,
-  });
-
-  if (error) {
-    logError('Failed to get video count', error, { creatorId });
-    throw new UploadError('Failed to check video limits', { creatorId });
-  }
-
-  const currentCount = data || 0;
-  const limits = await getVideoLimits(creatorId);
-
-  if (currentCount >= limits.maxVideos) {
-    logInfo('Video limit reached', { creatorId, currentCount, limit: limits.maxVideos });
-    return false;
-  }
-
-  return true;
+function generateStoragePath(creatorId: string, videoId: string, filename: string): string {
+  const extension = filename.toLowerCase().match(/\.[^.]+$/)?.[0] || '.mp4';
+  return `${creatorId}/${videoId}/original${extension}`;
 }
 
 // ============================================================================
-// S3 UPLOAD URL GENERATION
+// SUPABASE STORAGE UPLOAD URL GENERATION
 // ============================================================================
 
 /**
- * Generate S3 key for video file
- */
-function generateS3Key(creatorId: string, filename: string): string {
-  const timestamp = Date.now();
-  const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-  return `videos/${creatorId}/${timestamp}-${sanitizedFilename}`;
-}
-
-/**
- * Generate presigned URL for direct upload to S3
+ * Generate presigned URL for direct upload to Supabase Storage
  */
 export async function generateUploadUrl(
   creatorId: string,
   request: UploadUrlRequest
 ): Promise<UploadUrlResponse> {
   const { filename, contentType, fileSize } = request;
+  const supabase = getSupabaseAdmin();
 
   // Validate file
   const validation = validateVideoFile(filename, contentType, fileSize);
@@ -192,50 +116,66 @@ export async function generateUploadUrl(
     });
   }
 
-  // Check plan limits
-  const canUpload = await validateVideoLimits(creatorId);
-  if (!canUpload) {
-    throw new UploadError('Video upload limit reached. Upgrade your plan to upload more.', {
+  // Check storage limits using the database function
+  const storageCheck = await checkStorageLimit(creatorId, fileSize);
+  if (!storageCheck.allowed) {
+    throw new UploadError(storageCheck.reason || 'Storage limit exceeded', {
       creatorId,
+      fileSize,
+      usage: storageCheck.usage,
     });
   }
 
-  // Generate S3 key
-  const s3Key = generateS3Key(creatorId, filename);
+  // Generate unique video ID
+  const videoId = crypto.randomUUID();
 
-  // Create presigned URL
-  const command = new PutObjectCommand({
-    Bucket: BUCKET_NAME,
-    Key: s3Key,
-    ContentType: contentType,
-    ContentLength: fileSize,
-  });
+  // Generate storage path with creator isolation
+  const storagePath = generateStoragePath(creatorId, videoId, filename);
 
-  const uploadUrl = await getSignedUrl(s3Client, command, {
-    expiresIn: UPLOAD_URL_EXPIRATION,
-  });
+  // Create presigned URL for upload using Supabase Storage
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .createSignedUploadUrl(storagePath);
+
+  if (signedUrlError || !signedUrlData) {
+    logError('Failed to create signed upload URL', signedUrlError, {
+      creatorId,
+      storagePath,
+    });
+    throw new UploadError('Failed to generate upload URL. Please try again.', {
+      creatorId,
+      error: signedUrlError?.message,
+    });
+  }
+
+  // Get public URL for the video (will be accessible after upload)
+  const { data: publicUrlData } = supabase.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(storagePath);
 
   // Create placeholder video record
-  const videoId = await createVideoPlaceholder({
+  await createVideoPlaceholder({
     creatorId,
+    videoId,
     filename,
-    s3Key,
+    storagePath,
     fileSize,
     mimeType: contentType,
+    videoUrl: publicUrlData.publicUrl,
   });
 
-  logInfo('Generated upload URL', {
+  logInfo('Generated Supabase upload URL', {
     videoId,
     creatorId,
     filename,
     fileSize,
-    s3Key,
+    storagePath,
   });
 
   return {
-    uploadUrl,
+    uploadUrl: signedUrlData.signedUrl,
     videoId,
-    s3Key,
+    storagePath,
     expiresIn: UPLOAD_URL_EXPIRATION,
   };
 }
@@ -249,114 +189,87 @@ export async function generateUploadUrl(
  */
 async function createVideoPlaceholder(data: {
   creatorId: string;
+  videoId: string;
   filename: string;
-  s3Key: string;
+  storagePath: string;
   fileSize: number;
   mimeType: string;
-}): Promise<string> {
+  videoUrl: string;
+}): Promise<void> {
   const supabase = getSupabaseAdmin();
 
-  const { data: video, error } = await supabase
-    .from('videos')
-    .insert({
-      creator_id: data.creatorId,
-      title: data.filename.replace(/\.[^.]+$/, ''), // Remove extension
-      video_url: `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${data.s3Key}`,
-      s3_key: data.s3Key,
-      file_size_bytes: data.fileSize,
-      mime_type: data.mimeType,
-      processing_status: 'pending',
-      processing_progress: 0,
-      transcript_processed: false,
-    })
-    .select('id')
-    .single();
+  const { error } = await supabase.from('videos').insert({
+    id: data.videoId,
+    creator_id: data.creatorId,
+    title: data.filename.replace(/\.[^.]+$/, ''), // Remove extension
+    video_url: data.videoUrl,
+    storage_path: data.storagePath,
+    file_size_bytes: data.fileSize,
+    mime_type: data.mimeType,
+    processing_status: 'pending',
+    processing_progress: 0,
+    transcript_processed: false,
+  });
 
-  if (error || !video) {
+  if (error) {
     logError('Failed to create video placeholder', error);
     throw new UploadError('Failed to create video record');
   }
-
-  return video.id;
 }
 
 /**
- * Create complete video record after successful upload
+ * Confirm video upload and update storage usage
  */
-export async function createVideoRecord(data: CreateVideoData): Promise<Video> {
+export async function confirmVideoUpload(
+  videoId: string,
+  creatorId: string
+): Promise<Video> {
   const supabase = getSupabaseAdmin();
 
-  // Check if placeholder exists with this s3Key
-  const { data: existing } = await supabase
+  // Get video record
+  const { data: video, error: fetchError } = await supabase
     .from('videos')
-    .select('id')
-    .eq('s3_key', data.s3Key)
+    .select('*')
+    .eq('id', videoId)
+    .eq('creator_id', creatorId)
     .single();
 
-  let video;
-
-  if (existing) {
-    // Update existing placeholder
-    const { data: updated, error } = await supabase
-      .from('videos')
-      .update({
-        title: data.title,
-        description: data.description,
-        duration_seconds: data.durationSeconds,
-        category: data.category,
-        tags: data.tags,
-        difficulty_level: data.difficultyLevel,
-        processing_status: 'pending',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', existing.id)
-      .select()
-      .single();
-
-    if (error) {
-      logError('Failed to update video record', error);
-      throw new UploadError('Failed to update video record');
-    }
-
-    video = updated;
-  } else {
-    // Create new record
-    const { data: created, error } = await supabase
-      .from('videos')
-      .insert({
-        creator_id: data.creatorId,
-        title: data.title,
-        description: data.description,
-        video_url: `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${data.s3Key}`,
-        s3_key: data.s3Key,
-        file_size_bytes: data.fileSize,
-        mime_type: data.mimeType,
-        duration_seconds: data.durationSeconds,
-        category: data.category,
-        tags: data.tags,
-        difficulty_level: data.difficultyLevel,
-        processing_status: 'pending',
-        processing_progress: 0,
-        transcript_processed: false,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      logError('Failed to create video record', error);
-      throw new UploadError('Failed to create video record');
-    }
-
-    video = created;
+  if (fetchError || !video) {
+    logError('Failed to fetch video for confirmation', fetchError, { videoId, creatorId });
+    throw new UploadError('Video not found');
   }
 
-  logInfo('Video record created', {
-    videoId: video.id,
-    creatorId: data.creatorId,
-    title: data.title,
+  // Update storage usage
+  try {
+    await updateStorageUsage(creatorId, video.file_size_bytes || 0, 1);
+  } catch (error) {
+    logError('Failed to update storage usage', error, { videoId, creatorId });
+    // Don't fail the upload, just log the error
+  }
+
+  // Update video status to 'uploaded'
+  const { data: updated, error: updateError } = await supabase
+    .from('videos')
+    .update({
+      processing_status: 'uploaded',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', videoId)
+    .select()
+    .single();
+
+  if (updateError || !updated) {
+    logError('Failed to update video status', updateError, { videoId });
+    throw new UploadError('Failed to confirm upload');
+  }
+
+  logInfo('Video upload confirmed', {
+    videoId,
+    creatorId,
+    fileSize: video.file_size_bytes,
   });
 
-  return video;
+  return updated;
 }
 
 /**
