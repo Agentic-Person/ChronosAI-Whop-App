@@ -1,13 +1,12 @@
 /**
- * Create Video Record API
+ * Confirm Video Upload API
  *
- * POST /api/video/create
- * Creates video record and initiates processing
+ * POST /api/video/confirm
+ * Confirms successful upload and initiates processing
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createVideoRecord, initiateProcessing } from '@/lib/video/upload-handler';
-import { CreateVideoData } from '@/lib/video/types';
+import { confirmVideoUpload, initiateProcessing } from '@/lib/video/upload-handler';
 import { withInfrastructure } from '@/lib/infrastructure/middleware/with-infrastructure';
 
 export const POST = withInfrastructure(
@@ -25,28 +24,15 @@ export const POST = withInfrastructure(
       const body = await req.json();
 
       // Validate required fields
-      if (!body.title || !body.s3Key) {
+      if (!body.videoId) {
         return NextResponse.json(
-          { error: 'Bad Request', message: 'Missing required fields: title, s3Key' },
+          { error: 'Bad Request', message: 'Missing required field: videoId' },
           { status: 400 }
         );
       }
 
-      const videoData: CreateVideoData = {
-        creatorId,
-        title: body.title,
-        description: body.description,
-        s3Key: body.s3Key,
-        fileSize: body.fileSize,
-        mimeType: body.mimeType,
-        durationSeconds: body.durationSeconds,
-        category: body.category,
-        tags: body.tags,
-        difficultyLevel: body.difficultyLevel,
-      };
-
-      // Create video record
-      const video = await createVideoRecord(videoData);
+      // Confirm upload (updates storage usage)
+      const video = await confirmVideoUpload(body.videoId, creatorId);
 
       // Initiate background processing
       await initiateProcessing(video.id);
@@ -60,7 +46,7 @@ export const POST = withInfrastructure(
             processingStatus: video.processing_status,
           },
         },
-        { status: 201 }
+        { status: 200 }
       );
     } catch (error: any) {
       return NextResponse.json(

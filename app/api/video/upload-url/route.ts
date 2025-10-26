@@ -2,14 +2,17 @@
  * Generate Upload URL API
  *
  * POST /api/video/upload-url
- * Generates presigned S3 URL for direct video upload
+ * Generates presigned Supabase Storage URL for direct video upload with:
+ * - Storage limit enforcement
+ * - Multi-tenant isolation
+ * - Tier-based quota checks
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { generateUploadUrl } from '@/lib/video/upload-handler';
 import { UploadUrlRequest, UploadError } from '@/lib/video/types';
 import { withInfrastructure } from '@/lib/infrastructure/middleware/with-infrastructure';
-import { getSupabaseAdmin } from '@/lib/infrastructure/database/connection-pool';
+import { getStorageUsageSummary } from '@/lib/features/storage-limits';
 
 export const POST = withInfrastructure(
   async (req: NextRequest) => {
@@ -38,10 +41,19 @@ export const POST = withInfrastructure(
         );
       }
 
-      // Generate upload URL
+      // Generate upload URL (includes storage limit check)
       const response = await generateUploadUrl(creatorId, body);
 
-      return NextResponse.json(response, { status: 200 });
+      // Get storage usage summary to include in response
+      const usageSummary = await getStorageUsageSummary(creatorId);
+
+      return NextResponse.json(
+        {
+          ...response,
+          storage: usageSummary,
+        },
+        { status: 200 }
+      );
     } catch (error: any) {
       if (error instanceof UploadError) {
         return NextResponse.json(
