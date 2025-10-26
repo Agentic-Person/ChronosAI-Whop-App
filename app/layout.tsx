@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { TopNavigation } from "@/components/layout/TopNavigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,9 +16,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // TODO: Implement proper auth context to pass real user data
+  // For now, TopNavigation will show "Sign In with Whop" button
+  const user = undefined;
+
   return (
     <html lang="en">
       <body className={inter.className}>
+        {/* Global Navigation - appears on all pages */}
+        <TopNavigation user={user} />
+
         {children}
         <Toaster position="top-right" />
       </body>

@@ -88,8 +88,8 @@ export function VideoCarousel({
             onClick={() => onVideoClick?.(video.id)}
             className="flex-shrink-0 w-48 cursor-pointer group"
           >
-            {/* Thumbnail */}
-            <div className="relative aspect-video bg-bg-elevated rounded-lg overflow-hidden border border-border-default hover:border-accent-orange transition-all mb-2">
+            {/* Thumbnail - Subtle Orange Border */}
+            <div className="relative aspect-video bg-bg-app/30 rounded-lg overflow-hidden border-2 border-accent-orange/30 hover:border-accent-orange/60 transition-all mb-2 shadow-lg shadow-accent-orange/5">
               {/* Placeholder for actual video thumbnail */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-12 h-12 bg-accent-orange/10 rounded-full flex items-center justify-center group-hover:bg-accent-orange/20 transition-colors">

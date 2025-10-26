@@ -105,9 +105,9 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             </div>
           </div>
 
-          {/* Right Side - User Stats & Avatar */}
+          {/* Right Side - User Stats & Avatar OR Sign In */}
           <div className="flex items-center gap-3">
-            {user && (
+            {user ? (
               <>
                 {/* XP Display */}
                 <Link
@@ -172,6 +172,14 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                   )}
                 </div>
               </>
+            ) : (
+              /* Sign In Button for Unauthenticated Users */
+              <Link
+                href="/api/whop/auth/login"
+                className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:opacity-90 transition-all font-medium shadow-md text-sm"
+              >
+                Sign In with Whop
+              </Link>
             )}
 
             {/* Mobile Menu Button */}
