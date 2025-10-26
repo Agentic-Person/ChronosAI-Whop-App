@@ -81,7 +81,7 @@ function Message({ message, onFeedback, onVideoClick }: MessageProps) {
       {/* Avatar */}
       <div className={cn(
         'flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
-        isUser ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+        isUser ? 'bg-accent-orange/20 text-accent-orange' : 'bg-bg-elevated text-text-muted'
       )}>
         {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
       </div>
@@ -93,8 +93,8 @@ function Message({ message, onFeedback, onVideoClick }: MessageProps) {
           className={cn(
             'inline-block rounded-lg px-4 py-2 max-w-[80%]',
             isUser
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-900'
+              ? 'bg-gradient-primary text-white'
+              : 'bg-bg-elevated text-text-primary border border-border-default'
           )}
         >
           {isUser ? (
@@ -183,20 +183,20 @@ function FeedbackButtons({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center py-12">
-      <div className="h-16 w-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-        <Bot className="h-8 w-8 text-blue-600" />
+      <div className="h-16 w-16 rounded-full bg-accent-orange/10 flex items-center justify-center mb-4">
+        <Bot className="h-8 w-8 text-accent-orange" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <h3 className="text-lg font-semibold text-text-primary mb-2">
         Ask me anything about the course
       </h3>
-      <p className="text-sm text-gray-600 max-w-md">
+      <p className="text-sm text-text-secondary max-w-md">
         I can help you understand concepts, find specific videos, and answer questions
         based on the course content.
       </p>
 
       {/* Suggested Questions */}
       <div className="mt-6 space-y-2 w-full max-w-md">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <p className="text-xs font-medium text-text-muted uppercase tracking-wide">
           Try asking:
         </p>
         <SuggestedQuestion text="How do I get started with..." />
@@ -212,7 +212,7 @@ function EmptyState() {
  */
 function SuggestedQuestion({ text }: { text: string }) {
   return (
-    <div className="text-left p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors">
+    <div className="text-left p-3 bg-bg-elevated rounded-lg border border-border-default text-sm text-text-secondary hover:bg-bg-hover hover:border-accent-orange/50 cursor-pointer transition-all">
       "{text}"
     </div>
   );
@@ -224,14 +224,14 @@ function SuggestedQuestion({ text }: { text: string }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3">
-      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-        <Bot className="h-5 w-5 text-gray-600" />
+      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-bg-elevated flex items-center justify-center">
+        <Bot className="h-5 w-5 text-text-muted" />
       </div>
-      <div className="bg-gray-100 rounded-lg px-4 py-3">
+      <div className="bg-bg-elevated border border-border-default rounded-lg px-4 py-3">
         <div className="flex gap-1">
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>

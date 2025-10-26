@@ -256,7 +256,7 @@ export function ChatInterface({
   // Embedded mode (full width)
   return (
     <>
-      <div className={cn('flex flex-col h-full bg-white rounded-lg border border-gray-200 overflow-hidden', className)}>
+      <div className={cn('flex flex-col h-full bg-bg-app overflow-hidden', className)}>
         {/* Usage Banner for FREE Tier */}
         {usage?.is_free_tier && usage.remaining >= 0 && (
           <div

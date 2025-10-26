@@ -64,7 +64,7 @@ export function MessageInput({
   const canSend = message.trim().length > 0 && !disabled && !isOverLimit;
 
   return (
-    <div className={cn('border-t border-gray-200 bg-white p-4', className)}>
+    <div className={cn('border-t border-border-default bg-bg-card p-4', className)}>
       <div className="flex gap-3 items-end">
         {/* Textarea */}
         <div className="flex-1 relative">
@@ -77,7 +77,7 @@ export function MessageInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              'w-full resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-500',
+              'w-full resize-none rounded-lg border border-border-default bg-bg-elevated text-text-primary placeholder-text-muted px-4 py-2.5 text-sm focus:border-accent-orange focus:outline-none focus:ring-2 focus:ring-accent-orange/20 disabled:bg-bg-app disabled:text-text-muted',
               'min-h-[44px] max-h-[150px]'
             )}
           />
@@ -87,7 +87,7 @@ export function MessageInput({
             <div
               className={cn(
                 'absolute bottom-2 right-2 text-xs',
-                isOverLimit ? 'text-red-500' : 'text-gray-400'
+                isOverLimit ? 'text-red-400' : 'text-text-muted'
               )}
             >
               {characterCount}/{maxLength}
@@ -102,8 +102,8 @@ export function MessageInput({
           className={cn(
             'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg transition-all',
             canSend
-              ? 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              ? 'bg-gradient-primary text-white hover:opacity-90 active:scale-95 shadow-md'
+              : 'bg-bg-elevated text-text-muted cursor-not-allowed border border-border-default'
           )}
           aria-label="Send message"
         >
@@ -116,8 +116,8 @@ export function MessageInput({
       </div>
 
       {/* Helper Text */}
-      <p className="mt-2 text-xs text-gray-500">
-        Press <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-300 font-mono">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-300 font-mono">Shift+Enter</kbd> for new line
+      <p className="mt-2 text-xs text-text-muted">
+        Press <kbd className="px-1.5 py-0.5 bg-bg-elevated rounded border border-border-default font-mono text-text-secondary">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-elevated rounded border border-border-default font-mono text-text-secondary">Shift+Enter</kbd> for new line
       </p>
     </div>
   );
