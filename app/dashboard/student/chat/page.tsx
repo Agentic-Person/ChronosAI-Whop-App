@@ -109,14 +109,14 @@ export default function StudentChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-50">
+    <div className="flex h-[calc(100vh-4rem)] bg-bg-app">
       {/* Mobile Menu Toggle */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed top-20 left-4 z-50 lg:hidden p-2 rounded-lg bg-white shadow-lg border border-gray-200 hover:bg-gray-50"
+        className="fixed top-20 left-4 z-50 lg:hidden p-2 rounded-lg bg-bg-card shadow-lg border border-border-default hover:bg-bg-hover"
         aria-label="Toggle sidebar"
       >
-        {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        {isSidebarOpen ? <X className="h-5 w-5 text-text-primary" /> : <Menu className="h-5 w-5 text-text-primary" />}
       </button>
 
       {/* Session Sidebar */}
@@ -149,17 +149,17 @@ export default function StudentChatPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-bg-card border-b border-border-default px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <MessageCircle className="h-5 w-5 text-blue-600" />
+              <div className="h-10 w-10 rounded-full bg-accent-orange/10 flex items-center justify-center">
+                <MessageCircle className="h-5 w-5 text-accent-orange" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-text-primary">
                   Course Assistant
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-text-secondary">
                   Ask me anything about the course videos
                 </p>
               </div>

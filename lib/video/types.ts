@@ -22,7 +22,7 @@ export interface UploadUrlRequest {
 export interface UploadUrlResponse {
   uploadUrl: string;
   videoId: string;
-  s3Key: string;
+  storagePath: string;
   expiresIn: number; // seconds
 }
 
@@ -30,7 +30,7 @@ export interface CreateVideoData {
   creatorId: string;
   title: string;
   description?: string;
-  s3Key: string;
+  storagePath: string;
   fileSize: number;
   mimeType: string;
   durationSeconds?: number;
@@ -61,7 +61,7 @@ export interface Video {
   transcribed_at?: string;
   chunked_at?: string;
   embedded_at?: string;
-  s3_key?: string;
+  storage_path?: string;
   file_size_bytes?: number;
   mime_type?: string;
   created_at: string;

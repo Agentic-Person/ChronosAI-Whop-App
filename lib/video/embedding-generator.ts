@@ -15,6 +15,7 @@ import { cache } from '@/lib/infrastructure/cache/redis-client';
 import { CacheTTL } from '@/lib/infrastructure/cache/cache-keys';
 import { logInfo, logError, logPerformance } from '@/lib/infrastructure/monitoring/logger';
 import { PerformanceTimer } from '@/lib/infrastructure/monitoring/performance';
+import { retryOpenAI } from '@/lib/utils/retry';
 import {
   TextChunk,
   VideoChunk,
@@ -147,11 +148,13 @@ async function generateBatchEmbeddings(
       uncached: uncachedTexts.length,
     });
 
-    // Generate embeddings for uncached texts
+    // Generate embeddings for uncached texts with retry logic
     if (uncachedTexts.length > 0) {
-      const response = await openai.embeddings.create({
-        model,
-        input: uncachedTexts,
+      const response = await retryOpenAI(async () => {
+        return await openai.embeddings.create({
+          model,
+          input: uncachedTexts,
+        });
       });
 
       // Cache new embeddings

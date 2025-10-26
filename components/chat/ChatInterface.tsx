@@ -10,10 +10,20 @@ import { ChatMessage } from '@/types/database';
 import { ChatResponse, APIResponse } from '@/types/api';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageCircle, X, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 import toast from 'react-hot-toast';
 import { showRewardToast } from '@/components/student/RewardNotification';
+import { UpgradePrompt } from '@/components/features/UpgradePrompt';
+import { MembershipTier } from '@/lib/features/types';
+
+interface ChatUsageInfo {
+  tier: MembershipTier;
+  remaining: number;
+  is_free_tier: boolean;
+  upgrade_required: boolean;
+  message?: string;
+}
 
 interface ChatInterfaceProps {
   sessionId?: string;
@@ -34,6 +44,8 @@ export function ChatInterface({
   const [sessionId, setSessionId] = useState<string | undefined>(initialSessionId);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(!isFloating);
+  const [usage, setUsage] = useState<ChatUsageInfo | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Load message history on mount if sessionId provided
   useEffect(() => {
@@ -89,6 +101,23 @@ export function ChatInterface({
 
       const data: APIResponse<ChatResponse> = await response.json();
 
+      // Handle chat limit exceeded error
+      if (!response.ok && response.status === 403) {
+        if (data.error?.code === 'CHAT_LIMIT_EXCEEDED') {
+          // Update usage from error response
+          if (data.meta?.usage) {
+            setUsage(data.meta.usage as ChatUsageInfo);
+          }
+
+          // Show upgrade modal for FREE tier users
+          if (data.error.details?.upgrade_required) {
+            setShowUpgradeModal(true);
+          }
+
+          throw new Error(data.error.message || 'Chat limit exceeded');
+        }
+      }
+
       if (!data.success || !data.data) {
         throw new Error(data.error?.message || 'Failed to send message');
       }
@@ -115,6 +144,26 @@ export function ChatInterface({
         const withoutTemp = prev.filter((m) => m.id !== tempUserMessage.id);
         return [...withoutTemp, tempUserMessage, aiMessage];
       });
+
+      // Update usage information if provided
+      if (data.meta?.usage) {
+        setUsage(data.meta.usage as ChatUsageInfo);
+
+        // Show warning if FREE tier is running low on questions
+        if (data.meta.usage.is_free_tier && data.meta.usage.remaining === 1) {
+          toast('⚠️ This is your last free question!', {
+            icon: '⚠️',
+            duration: 5000,
+            style: {
+              background: '#fef3c7',
+              color: '#92400e',
+            },
+          });
+        } else if (data.meta.usage.is_free_tier && data.meta.usage.remaining === 0) {
+          // Show upgrade modal after last free question
+          setTimeout(() => setShowUpgradeModal(true), 2000);
+        }
+      }
 
       // Show CHRONOS reward notification if tokens were awarded
       if (data.meta?.chronos_awarded) {
@@ -206,22 +255,73 @@ export function ChatInterface({
 
   // Embedded mode (full width)
   return (
-    <div className={cn('flex flex-col h-full bg-white rounded-lg border border-gray-200 overflow-hidden', className)}>
-      {/* Messages */}
-      <MessageList
-        messages={messages}
-        onFeedback={handleFeedback}
-        onVideoClick={onVideoClick}
-        isLoading={isLoading}
-        className="flex-1"
-      />
+    <>
+      <div className={cn('flex flex-col h-full bg-white rounded-lg border border-gray-200 overflow-hidden', className)}>
+        {/* Usage Banner for FREE Tier */}
+        {usage?.is_free_tier && usage.remaining >= 0 && (
+          <div
+            className={cn(
+              'px-4 py-3 border-b flex items-center justify-between',
+              usage.remaining === 0
+                ? 'bg-red-50 border-red-200 text-red-700'
+                : usage.remaining === 1
+                ? 'bg-yellow-50 border-yellow-200 text-yellow-700'
+                : 'bg-blue-50 border-blue-200 text-blue-700'
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                {usage.remaining === 0
+                  ? 'Free questions used. Upgrade to continue!'
+                  : usage.remaining === 1
+                  ? '⚠️ Last free question remaining!'
+                  : `${usage.remaining} free questions remaining`}
+              </span>
+            </div>
+            {usage.remaining === 0 && (
+              <button
+                onClick={() => setShowUpgradeModal(true)}
+                className="px-3 py-1 text-xs font-semibold bg-accent-orange text-white rounded-md hover:bg-accent-orange/90 transition"
+              >
+                Upgrade Now
+              </button>
+            )}
+          </div>
+        )}
 
-      {/* Input */}
-      <MessageInput
-        onSend={handleSendMessage}
-        disabled={isLoading}
-      />
-    </div>
+        {/* Messages */}
+        <MessageList
+          messages={messages}
+          onFeedback={handleFeedback}
+          onVideoClick={onVideoClick}
+          isLoading={isLoading}
+          className="flex-1"
+        />
+
+        {/* Input */}
+        <MessageInput
+          onSend={handleSendMessage}
+          disabled={isLoading || (usage?.is_free_tier && usage.remaining === 0)}
+          placeholder={
+            usage?.is_free_tier && usage.remaining === 0
+              ? 'Upgrade to continue chatting...'
+              : undefined
+          }
+        />
+      </div>
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <UpgradePrompt
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          featureKey="aiChat"
+          variant="modal"
+          message="You've discovered the power of AI-assisted learning! Upgrade to continue getting instant answers from your course videos."
+        />
+      )}
+    </>
   );
 }
 

@@ -305,6 +305,7 @@ export function validateChunks(chunks: TextChunk[]): { valid: boolean; errors: s
  */
 export async function storeChunks(
   videoId: string,
+  creatorId: string,
   chunks: TextChunk[]
 ): Promise<VideoChunk[]> {
   const supabase = getSupabaseAdmin();
@@ -317,9 +318,10 @@ export async function storeChunks(
     });
   }
 
-  // Convert to database format
+  // Convert to database format - INCLUDING creator_id for multi-tenant isolation
   const records = chunks.map((chunk) => ({
     video_id: videoId,
+    creator_id: creatorId, // CRITICAL: Add creator_id for multi-tenant isolation
     chunk_text: chunk.text,
     chunk_index: chunk.index,
     start_timestamp: Math.floor(chunk.startTimestamp),

@@ -76,10 +76,8 @@ export { VIDEO_PROCESSING_CONSTANTS } from './types';
 
 export {
   validateVideoFile,
-  getVideoLimits,
-  validateVideoLimits,
   generateUploadUrl,
-  createVideoRecord,
+  confirmVideoUpload,
   initiateProcessing,
   updateProcessingStatus,
   getVideoById,
@@ -146,27 +144,21 @@ export {
  * import { generateUploadUrl, createVideoRecord, initiateProcessing } from '@/lib/video';
  *
  * // 1. Generate upload URL
- * const { uploadUrl, videoId, s3Key } = await generateUploadUrl(creatorId, {
+ * const { uploadUrl, videoId, storagePath } = await generateUploadUrl(creatorId, {
  *   filename: 'my-video.mp4',
  *   contentType: 'video/mp4',
  *   fileSize: 104857600,
  * });
  *
- * // 2. Upload to S3 (client-side)
+ * // 2. Upload to Supabase Storage (client-side)
  * await fetch(uploadUrl, {
  *   method: 'PUT',
  *   body: videoFile,
  *   headers: { 'Content-Type': 'video/mp4' },
  * });
  *
- * // 3. Create video record
- * const video = await createVideoRecord({
- *   creatorId,
- *   title: 'My Video',
- *   s3Key,
- *   fileSize: 104857600,
- *   mimeType: 'video/mp4',
- * });
+ * // 3. Confirm upload
+ * const video = await confirmVideoUpload(videoId, creatorId);
  *
  * // 4. Initiate processing
  * await initiateProcessing(video.id);

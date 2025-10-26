@@ -16,6 +16,7 @@ import { Readable } from 'stream';
 import { getSupabaseAdmin } from '@/lib/infrastructure/database/connection-pool';
 import { logInfo, logError, logPerformance } from '@/lib/infrastructure/monitoring/logger';
 import { PerformanceTimer } from '@/lib/infrastructure/monitoring/performance';
+import { retryOpenAI } from '@/lib/utils/retry';
 import {
   Transcript,
   TranscriptSegment,
@@ -151,18 +152,20 @@ async function transcribeSingleFile(
   timer.start('transcription');
 
   try {
-    // Create a read stream for the file
-    const fileStream = fs.createReadStream(filePath);
+    // Call Whisper API with retry logic for transient failures
+    const response = await retryOpenAI(async () => {
+      // Create a fresh read stream for each retry attempt
+      const fileStream = fs.createReadStream(filePath);
 
-    // Call Whisper API
-    const response = await openai.audio.transcriptions.create({
-      file: fileStream,
-      model: 'whisper-1',
-      response_format: 'verbose_json',
-      timestamp_granularities: ['segment'],
-      language: options.language || 'en',
-      prompt: options.prompt,
-      temperature: options.temperature || 0,
+      return await openai.audio.transcriptions.create({
+        file: fileStream,
+        model: 'whisper-1',
+        response_format: 'verbose_json',
+        timestamp_granularities: ['segment'],
+        language: options.language || 'en',
+        prompt: options.prompt,
+        temperature: options.temperature || 0,
+      });
     });
 
     const duration = timer.end('transcription');

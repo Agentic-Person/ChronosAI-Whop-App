@@ -18,6 +18,7 @@ import {
 import { logAPIRequest, logInfo, logError } from '@/lib/infrastructure/monitoring/logger';
 import { measureAsync } from '@/lib/infrastructure/monitoring/performance';
 import { awardChatMessage, getBalance } from '@/lib/chronos/rewardEngine';
+import { checkChatLimit, incrementChatUsage, initializeUsage, formatUsageMessage } from '@/lib/features/chat-limits';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -44,7 +45,30 @@ export async function POST(request: NextRequest) {
       throw new ValidationError('Message too long (max 500 characters)');
     }
 
-    // 4. Rate limiting - 20 requests per minute for chat
+    // 4. Check chat limits (FREE tier: 3 questions, others: daily limits)
+    const limitCheck = await checkChatLimit(user.id);
+
+    if (!limitCheck.allowed) {
+      // User has exceeded their chat limit
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'CHAT_LIMIT_EXCEEDED',
+          message: limitCheck.message || 'You have reached your chat limit. Please upgrade to continue.',
+          details: {
+            tier: limitCheck.usage.tier,
+            upgrade_required: limitCheck.usage.upgrade_required,
+            questions_asked: limitCheck.usage.questions_asked,
+            remaining: limitCheck.usage.remaining,
+          },
+        },
+        meta: {
+          usage: limitCheck.usage,
+        },
+      }, { status: 403 });
+    }
+
+    // 5. Rate limiting - 20 requests per minute for chat (additional protection)
     const rateLimitResult = await checkRateLimit(user.id, 'chat:message', {
       max: 20,
       window: 60, // 60 seconds
@@ -93,7 +117,22 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    // 7. Award CHRONOS tokens for asking a question
+    // 7. Increment chat usage for tier limits
+    let usageInfo;
+    try {
+      usageInfo = await incrementChatUsage(user.id);
+      logInfo('Chat usage incremented', {
+        userId: user.id,
+        tier: usageInfo.tier,
+        remaining: usageInfo.remaining,
+        upgrade_required: usageInfo.upgrade_required,
+      });
+    } catch (error) {
+      // If this fails, log but don't fail the request
+      logError('Failed to increment chat usage', { error, userId: user.id });
+    }
+
+    // 8. Award CHRONOS tokens for asking a question
     let chronosBalance: number | undefined;
     try {
       const rewardResult = await awardChatMessage(
@@ -107,7 +146,7 @@ export async function POST(request: NextRequest) {
       logError('Failed to award chat tokens', { error, userId: user.id });
     }
 
-    // 8. Log success
+    // 9. Log success
     const duration = Date.now() - startTime;
     logInfo('Chat request completed', {
       userId: user.id,
@@ -115,9 +154,10 @@ export async function POST(request: NextRequest) {
       duration,
       confidence: response.confidence,
       chronosAwarded: chronosBalance !== undefined,
+      usageTracked: usageInfo !== undefined,
     });
 
-    // 9. Return response with reward info
+    // 10. Return response with usage and reward info
     const chatResponse: ChatResponse = {
       message_id: response.message_id,
       content: response.answer,
@@ -130,6 +170,15 @@ export async function POST(request: NextRequest) {
       data: chatResponse,
       meta: {
         creator_id: creatorId, // Multi-tenant: which creator's content was used
+        ...(usageInfo ? {
+          usage: {
+            tier: usageInfo.tier,
+            remaining: usageInfo.remaining,
+            is_free_tier: usageInfo.is_free_tier,
+            upgrade_required: usageInfo.upgrade_required,
+            message: formatUsageMessage(usageInfo),
+          },
+        } : {}),
         ...(chronosBalance !== undefined ? {
           chronos_awarded: 10,
           chronos_balance: chronosBalance,

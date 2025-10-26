@@ -47,12 +47,12 @@ export function SessionSidebar({
   const groupedSessions = groupSessionsByDate(filteredSessions);
 
   return (
-    <div className="h-full bg-white border-r border-gray-200 flex flex-col">
+    <div className="h-full bg-bg-sidebar border-r border-border-default flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border-default">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-primary text-white rounded-lg hover:opacity-90 transition-all font-medium shadow-md"
         >
           <Plus className="h-5 w-5" />
           New Chat
@@ -60,15 +60,15 @@ export function SessionSidebar({
       </div>
 
       {/* Search */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border-default">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search conversations..."
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 text-sm bg-bg-elevated border border-border-default text-text-primary placeholder-text-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-orange/20 focus:border-accent-orange"
           />
         </div>
       </div>
@@ -83,7 +83,7 @@ export function SessionSidebar({
           <div className="p-2">
             {Object.entries(groupedSessions).map(([dateLabel, groupSessions]) => (
               <div key={dateLabel} className="mb-4">
-                <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="px-3 mb-2 text-xs font-semibold text-text-muted uppercase tracking-wide">
                   {dateLabel}
                 </h3>
                 <div className="space-y-1">
@@ -106,8 +106,8 @@ export function SessionSidebar({
       </div>
 
       {/* Footer Stats */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between text-xs text-gray-600">
+      <div className="p-4 border-t border-border-default bg-bg-card">
+        <div className="flex items-center justify-between text-xs text-text-muted">
           <span>{sessions.length} conversations</span>
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
@@ -164,14 +164,14 @@ function SessionItem({
       className={cn(
         'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer transition-all',
         isActive
-          ? 'bg-blue-50 text-blue-900'
-          : 'hover:bg-gray-50 text-gray-700'
+          ? 'bg-accent-orange/10 text-text-primary'
+          : 'hover:bg-bg-hover text-text-secondary'
       )}
     >
       {/* Icon */}
       <div className={cn(
         'flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
-        isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+        isActive ? 'bg-accent-orange/20 text-accent-orange' : 'bg-bg-elevated text-text-muted'
       )}>
         <MessageCircle className="h-4 w-4" />
       </div>
@@ -180,13 +180,13 @@ function SessionItem({
       <div className="flex-1 min-w-0">
         <h4 className={cn(
           'text-sm font-medium truncate',
-          isActive ? 'text-blue-900' : 'text-gray-900'
+          isActive ? 'text-text-primary' : 'text-text-primary'
         )}>
           {session.title}
         </h4>
         <p className={cn(
           'text-xs truncate',
-          isActive ? 'text-blue-700' : 'text-gray-500'
+          isActive ? 'text-accent-orange' : 'text-text-muted'
         )}>
           {formatRelativeTime(session.updated_at)}
         </p>
@@ -196,23 +196,23 @@ function SessionItem({
       <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={handleMenuClick}
-          className="p-1 rounded hover:bg-gray-200 transition-colors"
+          className="p-1 rounded hover:bg-bg-elevated transition-colors"
           aria-label="More options"
         >
-          <MoreVertical className="h-4 w-4 text-gray-500" />
+          <MoreVertical className="h-4 w-4 text-text-muted" />
         </button>
       </div>
 
       {/* Delete Menu */}
       {isMenuOpen && (
-        <div className="absolute right-2 top-full mt-1 z-10 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[120px]">
+        <div className="absolute right-2 top-full mt-1 z-10 bg-bg-elevated rounded-lg shadow-lg border border-border-default py-1 min-w-[120px]">
           <button
             onClick={handleDelete}
             className={cn(
               'w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors',
               showDeleteConfirm
-                ? 'bg-red-50 text-red-700 hover:bg-red-100'
-                : 'text-gray-700 hover:bg-gray-50'
+                ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                : 'text-text-secondary hover:bg-bg-hover'
             )}
           >
             <Trash2 className="h-4 w-4" />
@@ -230,13 +230,13 @@ function SessionItem({
 function EmptyState({ hasSearch }: { hasSearch: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center h-64 text-center px-4">
-      <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <MessageCircle className="h-8 w-8 text-gray-400" />
+      <div className="h-16 w-16 rounded-full bg-bg-elevated flex items-center justify-center mb-4">
+        <MessageCircle className="h-8 w-8 text-text-muted" />
       </div>
-      <h3 className="text-sm font-medium text-gray-900 mb-1">
+      <h3 className="text-sm font-medium text-text-primary mb-1">
         {hasSearch ? 'No conversations found' : 'No conversations yet'}
       </h3>
-      <p className="text-xs text-gray-600">
+      <p className="text-xs text-text-secondary">
         {hasSearch
           ? 'Try a different search term'
           : 'Start a new chat to ask questions about the course'}
@@ -253,10 +253,10 @@ function LoadingSkeleton() {
     <div className="p-2 space-y-2">
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="flex items-center gap-3 px-3 py-2.5 animate-pulse">
-          <div className="h-8 w-8 rounded-full bg-gray-200" />
+          <div className="h-8 w-8 rounded-full bg-bg-elevated" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 rounded w-1/2" />
+            <div className="h-4 bg-bg-elevated rounded w-3/4" />
+            <div className="h-3 bg-bg-elevated rounded w-1/2" />
           </div>
         </div>
       ))}

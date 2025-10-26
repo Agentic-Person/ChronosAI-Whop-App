@@ -78,8 +78,8 @@ export const processVideo = inngest.createFunction(
         logger.info('Chunking transcript', { videoId });
         const textChunks = chunkTranscript(transcript);
 
-        // Store chunks
-        await storeChunks(videoId, textChunks);
+        // Store chunks - CRITICAL: Pass creatorId for multi-tenant isolation
+        await storeChunks(videoId, creatorId, textChunks);
 
         await updateProcessingStatus(videoId, {
           processing_step: 'Chunks created',

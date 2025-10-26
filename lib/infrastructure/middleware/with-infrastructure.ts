@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'crypto';
+import { randomUUID as uuidv4 } from 'crypto';
 import { checkRateLimit } from '../rate-limiting/rate-limiter';
 import { errorToAPIResponse, isInfrastructureError } from '../errors';
 import { logAPIRequest, logError } from '../monitoring/logger';
