@@ -106,8 +106,8 @@ export function SessionSidebar({
       </div>
 
       {/* Footer Stats */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between text-xs text-gray-600">
+      <div className="p-4 border-t border-border-default bg-bg-card">
+        <div className="flex items-center justify-between text-xs text-text-muted">
           <span>{sessions.length} conversations</span>
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
