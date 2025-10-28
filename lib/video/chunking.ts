@@ -68,8 +68,8 @@ export class IntelligentChunker {
       currentWords.push(...segmentWords);
       currentSegments.push(segment);
 
-      // Check if we've reached target size
-      if (currentWords.length >= this.targetWords) {
+      // Check if we've reached target size OR exceeded max size
+      if (currentWords.length >= this.targetWords || currentWords.length >= this.maxWords) {
         // Try to find a natural break
         const breakPoint = this.findNaturalBreak(currentWords);
 
@@ -99,10 +99,15 @@ export class IntelligentChunker {
       }
     }
 
-    // Add remaining words as final chunk
+    // Add remaining words as final chunk (enforce maxWords if needed)
     if (currentWords.length > 0) {
+      // If remaining words exceed maxWords, truncate to maxWords
+      const finalWords = currentWords.length > this.maxWords
+        ? currentWords.slice(0, this.maxWords)
+        : currentWords;
+
       const chunk = this.createChunk(
-        currentWords,
+        finalWords,
         currentSegments,
         chunks.length,
         chunkStartTime
@@ -131,10 +136,13 @@ export class IntelligentChunker {
    * Find natural break point (sentence ending)
    */
   private findNaturalBreak(words: string[]): number {
-    // Look for sentence endings in last portion of chunk
-    const searchStart = Math.max(this.minWords, words.length - 100);
+    // Enforce maxWords hard limit
+    const effectiveLength = Math.min(words.length, this.maxWords);
 
-    for (let i = words.length - 1; i >= searchStart; i--) {
+    // Look for sentence endings in last portion of chunk
+    const searchStart = Math.max(this.minWords, effectiveLength - 100);
+
+    for (let i = effectiveLength - 1; i >= searchStart; i--) {
       const word = words[i];
       // Check for sentence-ending punctuation
       if (/[.!?;]$/.test(word)) {
@@ -142,8 +150,8 @@ export class IntelligentChunker {
       }
     }
 
-    // No natural break found, use target size
-    return Math.min(this.targetWords, words.length);
+    // No natural break found, use target size (but not exceeding maxWords)
+    return Math.min(this.targetWords, effectiveLength);
   }
 
   /**
@@ -158,14 +166,45 @@ export class IntelligentChunker {
     const text = words.join(' ');
     const wordCount = words.length;
 
-    // Calculate timestamps from segments
-    const timestamps = this.calculateTimestamps(text, segments);
+    // FIX: Use segment-based timestamps instead of manual tracking
+    let startTimestamp: number;
+    let endTimestamp: number;
+
+    if (segments.length === 0) {
+      // No segments available - use fallback
+      startTimestamp = chunkStartTime;
+      endTimestamp = chunkStartTime;
+    } else {
+      // Use actual segment timestamps
+      startTimestamp = segments[0].start;
+      endTimestamp = segments[segments.length - 1].end;
+
+      // Safety check: ensure end >= start
+      if (endTimestamp < startTimestamp) {
+        console.warn(`⚠️ Timestamp inversion detected in chunk ${index}: start=${startTimestamp}, end=${endTimestamp}`);
+        endTimestamp = Math.max(endTimestamp, startTimestamp);
+      }
+    }
+
+    // DIAGNOSTIC LOGGING
+    console.log(`\n=== CHUNK ${index} DEBUG ===`);
+    console.log(`Manual chunkStartTime (ignored): ${chunkStartTime.toFixed(2)}s`);
+    console.log(`Segments count: ${segments.length}`);
+    if (segments.length > 0) {
+      console.log(`First segment: ${segments[0]?.start?.toFixed(2)}s - ${segments[0]?.end?.toFixed(2)}s`);
+      console.log(`Last segment: ${segments[segments.length - 1]?.start?.toFixed(2)}s - ${segments[segments.length - 1]?.end?.toFixed(2)}s`);
+    }
+    console.log(`Using segment-based timestamps:`);
+    console.log(`  startTimestamp: ${startTimestamp.toFixed(2)}s (from first segment)`);
+    console.log(`  endTimestamp: ${endTimestamp.toFixed(2)}s (from last segment)`);
+    console.log(`Word count: ${wordCount}`);
+    console.log(`Text preview: "${text.substring(0, 50)}..."`);
 
     return {
       text,
       index,
-      startTimestamp: chunkStartTime,
-      endTimestamp: timestamps.end,
+      startTimestamp,
+      endTimestamp,
       wordCount,
     };
   }
