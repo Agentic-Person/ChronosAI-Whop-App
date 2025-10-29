@@ -12,6 +12,7 @@ import {
   CreateProjectOptions,
 } from '@/lib/assessments';
 import { getUser } from '@/lib/utils/supabase-client';
+import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limiting/rate-limiter';
 import { checkFeatureAccess } from '@/lib/features/feature-flags';
 import { Feature } from '@/lib/features/types';
@@ -23,7 +24,6 @@ import {
   errorToAPIResponse,
 } from '@/lib/infrastructure/errors';
 import { logAPIRequest, logInfo, logError } from '@/lib/infrastructure/monitoring/logger';
-import { supabase } from '@/lib/utils/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Get student ID
+    const supabase = createClient();
     const { data: student } = await supabase
       .from('students')
       .select('id, creator_id')
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Get student ID
+    const supabase = createClient();
     const { data: student } = await supabase
       .from('students')
       .select('id, creator_id')
