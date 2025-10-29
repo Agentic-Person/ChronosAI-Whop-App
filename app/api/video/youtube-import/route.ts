@@ -193,10 +193,10 @@ export async function POST(req: NextRequest) {
 
     // Store video in database - using ONLY columns from original schema
     // Use admin client to bypass RLS for backend video creation
-    const supabase = createAdminClient();
+    const adminClient = createAdminClient();
     const youtubeUrlFull = `https://www.youtube.com/watch?v=${videoId}`;
 
-    const { data: videoRecord, error: dbError } = await supabase
+    const { data: videoRecord, error: dbError } = await adminClient
       .from('videos')
       .insert({
         creator_id: creatorId,
