@@ -45,18 +45,6 @@ export async function GET(req: NextRequest) {
     const auth = await getAuthenticatedCreatorId(req);
     if (auth.error) return auth.error;
     const creatorId = auth.creatorId!;
-      const supabase = createAdminClient();
-
-      const { data: courses, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('creator_id', defaultCreatorId)
-        .order('order_index', { ascending: true });
-
-      if (error) throw error;
-
-      return NextResponse.json(courses || []);
-    }
 
     const supabase = createAdminClient();
 
