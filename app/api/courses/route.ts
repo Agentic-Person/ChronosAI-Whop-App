@@ -1,5 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+// Helper function to get authenticated creator ID
+async function getAuthenticatedCreatorId(req: NextRequest): Promise<{ creatorId?: string; error?: NextResponse }> {
+  const supabase = createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      error: NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      )
+    };
+  }
+
+  // Get creator record from whop_user_id
+  const { data: creator, error: creatorError } = await supabase
+    .from('creators')
+    .select('id')
+    .eq('whop_user_id', user.id)
+    .single();
+
+  if (creatorError || !creator) {
+    return {
+      error: NextResponse.json(
+        { error: 'Unauthorized', message: 'Creator account not found' },
+        { status: 403 }
+      )
+    };
+  }
+
+  return { creatorId: creator.id };
+}
+
 
 /**
  * GET /api/courses
@@ -7,12 +41,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
  */
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const creatorId = searchParams.get('creatorId');
-
-    if (!creatorId) {
-      // For dev, use default creator
-      const defaultCreatorId = '00000000-0000-0000-0000-000000000001';
+    // PRODUCTION: Get creator ID from authenticated session
+    const auth = await getAuthenticatedCreatorId(req);
+    if (auth.error) return auth.error;
+    const creatorId = auth.creatorId!;
       const supabase = createAdminClient();
 
       const { data: courses, error } = await supabase
@@ -53,7 +85,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, description, creatorId, thumbnailUrl } = body;
+    const { title, description, thumbnailUrl } = body;
+    
+    // PRODUCTION: Get creator ID from authenticated session
+    const auth = await getAuthenticatedCreatorId(req);
+    if (auth.error) return auth.error;
+    const creatorId = auth.creatorId!;
 
     if (!title) {
       return NextResponse.json(
@@ -68,7 +105,7 @@ export async function POST(req: NextRequest) {
     const { data: existingCourses } = await supabase
       .from('courses')
       .select('order_index')
-      .eq('creator_id', creatorId || '00000000-0000-0000-0000-000000000001')
+      .eq('creator_id', creatorId)
       .order('order_index', { ascending: false })
       .limit(1);
 
@@ -81,7 +118,7 @@ export async function POST(req: NextRequest) {
       .insert({
         title,
         description: description || '',
-        creator_id: creatorId || '00000000-0000-0000-0000-000000000001',
+        creator_id: creatorId,
         thumbnail_url: thumbnailUrl,
         order_index: nextOrderIndex,
         is_active: true

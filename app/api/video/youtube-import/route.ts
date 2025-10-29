@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { Innertube } from 'youtubei.js';
 import { chunkTranscript, storeChunks } from '@/lib/video/chunking';
 import { generateEmbeddings, storeEmbeddings } from '@/lib/video/embedding-generator';

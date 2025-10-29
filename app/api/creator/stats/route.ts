@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { getCreatorStats } from '@/lib/creator/analytics';
 
 /**
@@ -7,17 +8,32 @@ import { getCreatorStats } from '@/lib/creator/analytics';
  */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Get creator ID from authenticated session
-    // For now, using query param for testing
-    const searchParams = request.nextUrl.searchParams;
-    const creatorId = searchParams.get('creatorId');
+    // PRODUCTION: Get creator ID from authenticated session
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (!creatorId) {
+    if (authError || !user) {
       return NextResponse.json(
-        { error: 'Creator ID is required' },
-        { status: 400 }
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
       );
     }
+
+    // Get creator record from whop_user_id
+    const { data: creator, error: creatorError } = await supabase
+      .from('creators')
+      .select('id')
+      .eq('whop_user_id', user.id)
+      .single();
+
+    if (creatorError || !creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Creator account not found' },
+        { status: 403 }
+      );
+    }
+
+    const creatorId = creator.id;
 
     const stats = await getCreatorStats(creatorId);
 

@@ -8,18 +8,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCreatorVideos } from '@/lib/video/upload-handler';
 import { withInfrastructure } from '@/lib/infrastructure/middleware/with-infrastructure';
+import { createClient } from '@/lib/supabase/server';
 
 export const GET = withInfrastructure(
   async (req: NextRequest) => {
     try {
-      const creatorId = req.headers.get('x-creator-id');
+      // PRODUCTION: Get creator ID from authenticated session
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-      if (!creatorId) {
+      if (authError || !user) {
         return NextResponse.json(
-          { error: 'Unauthorized', message: 'Creator ID required' },
+          { error: 'Unauthorized', message: 'Authentication required' },
           { status: 401 }
         );
       }
+
+      // Get creator record from whop_user_id
+      const { data: creator, error: creatorError } = await supabase
+        .from('creators')
+        .select('id')
+        .eq('whop_user_id', user.id)
+        .single();
+
+      if (creatorError || !creator) {
+        return NextResponse.json(
+          { error: 'Unauthorized', message: 'Creator account not found' },
+          { status: 403 }
+        );
+      }
+
+      const creatorId = creator.id;
 
       // Get query parameters
       const { searchParams } = new URL(req.url);
