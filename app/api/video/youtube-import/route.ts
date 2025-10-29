@@ -6,6 +6,9 @@ import { chunkTranscript, storeChunks } from '@/lib/video/chunking';
 import { generateEmbeddings, storeEmbeddings } from '@/lib/video/embedding-generator';
 import type { Transcript } from '@/lib/video/types';
 
+// Force dynamic rendering - this route uses request context and environment variables
+export const dynamic = 'force-dynamic';
+
 // Helper: Extract YouTube video ID from various URL formats
 function extractYouTubeId(url: string): string | null {
   const patterns = [

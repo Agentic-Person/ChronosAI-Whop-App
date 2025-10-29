@@ -5,6 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Upload, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 
+// Force dynamic rendering - this page uses useSearchParams() which requires request context
+export const dynamic = 'force-dynamic';
+
 export default function MobileUploadPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
