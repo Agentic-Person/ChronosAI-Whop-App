@@ -1,44 +1,75 @@
 /**
  * Supabase Client Configuration
  * Singleton Supabase client for server-side and client-side usage
+ *
+ * IMPORTANT: This file uses lazy initialization to prevent build-time errors
+ * when environment variables are not available during Next.js static page collection.
  */
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 
-// Ensure environment variables are set
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Singleton instances (lazy-loaded)
+let _supabase: SupabaseClient | null = null;
+let _supabaseAdmin: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+/**
+ * Get environment variables with runtime validation
+ */
+function getEnvVars() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+
+  return { supabaseUrl, supabaseAnonKey, supabaseServiceKey };
 }
 
 /**
  * Client-side Supabase client (uses anon key, RLS enforced)
+ * Lazy-loaded to prevent build-time initialization
  */
-export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(target, prop) {
+    if (!_supabase) {
+      const { supabaseUrl, supabaseAnonKey } = getEnvVars();
+      _supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+        },
+      });
+    }
+    return (_supabase as any)[prop];
   },
 });
 
 /**
  * Server-side Supabase client (uses service role key, bypasses RLS)
  * WARNING: Only use on the server side, never expose to client
+ * Lazy-loaded to prevent build-time initialization
  */
-export const supabaseAdmin = createSupabaseClient(
-  supabaseUrl,
-  supabaseServiceKey || supabaseAnonKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(target, prop) {
+    if (!_supabaseAdmin) {
+      const { supabaseUrl, supabaseAnonKey, supabaseServiceKey } = getEnvVars();
+      _supabaseAdmin = createSupabaseClient(
+        supabaseUrl,
+        supabaseServiceKey || supabaseAnonKey,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      );
+    }
+    return (_supabaseAdmin as any)[prop];
+  },
+});
 
 /**
  * Get user from Supabase auth
