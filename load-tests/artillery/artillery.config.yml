@@ -1,0 +1,41 @@
+# Artillery Load Test Configuration
+# Main configuration file for all load tests
+
+config:
+  target: "{{ $processEnvironment.TARGET_URL }}"
+  # Default to localhost if not set
+  defaults:
+    TARGET_URL: "http://localhost:3000"
+
+  # HTTP configuration
+  http:
+    timeout: 30
+    maxSockets: 1000
+    extendedMetrics: true
+
+  # Performance tracking
+  ensure:
+    # Response time thresholds
+    p95: 5000  # 95th percentile < 5s
+    p99: 10000 # 99th percentile < 10s
+    # Error rate threshold
+    maxErrorRate: 0.01  # < 1% errors
+
+  # Metrics reporting
+  plugins:
+    expect: {}
+    metrics-by-endpoint:
+      stripQueryString: true
+      ignoreUnknownEndpoints: false
+
+  # Environment variables
+  variables:
+    # Will be populated from .env or command line
+    supabase_url: "{{ $processEnvironment.NEXT_PUBLIC_SUPABASE_URL }}"
+    supabase_anon_key: "{{ $processEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY }}"
+
+  # Custom processor for dynamic data
+  processor: "./processors/test-data-processor.js"
+
+  # Rate limiting awareness
+  pool: 50  # Connection pool size

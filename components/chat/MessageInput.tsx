@@ -64,7 +64,7 @@ export function MessageInput({
   const canSend = message.trim().length > 0 && !disabled && !isOverLimit;
 
   return (
-    <div className={cn('border-t border-border-default bg-bg-card p-4', className)}>
+    <div className={cn('border-t border-teal bg-bg-card p-4', className)} style={{ boxShadow: 'var(--shadow-teal-glow)' }}>
       <div className="flex gap-3 items-end">
         {/* Textarea */}
         <div className="flex-1 relative">
@@ -77,9 +77,16 @@ export function MessageInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              'w-full resize-none rounded-lg border border-border-default bg-bg-elevated text-text-primary placeholder-text-muted px-4 py-2.5 text-sm focus:border-accent-orange focus:outline-none focus:ring-2 focus:ring-accent-orange/20 disabled:bg-bg-app disabled:text-text-muted',
+              'w-full resize-none rounded-lg border border-teal bg-bg-elevated text-text-primary placeholder-text-muted px-4 py-2.5 text-sm focus:border-accent-orange focus:outline-none disabled:bg-bg-app disabled:text-text-muted',
               'min-h-[44px] max-h-[150px]'
             )}
+            style={{ boxShadow: 'var(--shadow-teal-glow)' }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.15)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = 'var(--shadow-teal-glow)';
+            }}
           />
 
           {/* Character Counter */}

@@ -87,7 +87,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { icon: MessageSquare, label: 'AI Chat', href: '/dashboard/student/chat' },
     { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: Trophy, label: 'Achievements', href: '/dashboard/achievements' },
-    { icon: Wallet, label: 'Wallet', href: '/dashboard/wallet' },
+    // TODO: Re-enable for post-MVP Chronos token feature
+    // { icon: Wallet, label: 'Wallet', href: '/dashboard/wallet' },
     { icon: BarChart, label: 'Leaderboard', href: '/dashboard/leaderboard' },
   ];
 
@@ -132,10 +133,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="text-accent-yellow font-semibold">{currentUser.xp} XP</span>
             </div>
             <ProgressBar value={(currentUser.xp % 100)} color="cyan" size="sm" />
-            <div className="flex items-center justify-between p-3 bg-bg-card rounded-lg">
+            {/* TODO: Re-enable for post-MVP Chronos token feature */}
+            {/* <div className="flex items-center justify-between p-3 bg-bg-card rounded-lg">
               <span className="text-sm text-text-secondary">CHRONOS Balance</span>
               <span className="text-lg font-bold text-accent-green">{currentUser.chronos}</span>
-            </div>
+            </div> */}
           </div>
         )}
       </div>

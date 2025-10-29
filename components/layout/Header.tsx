@@ -108,7 +108,8 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
         </Tooltip>
 
-        <Tooltip content="CHRONOS Balance">
+        {/* TODO: Re-enable for post-MVP Chronos token feature */}
+        {/* <Tooltip content="CHRONOS Balance">
           <Link
             href="/dashboard/wallet"
             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card hover:bg-bg-hover transition-colors"
@@ -117,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-sm font-semibold hidden sm:inline">{user.chronos} CHRONOS</span>
             <span className="text-sm font-semibold sm:hidden">{user.chronos}</span>
           </Link>
-        </Tooltip>
+        </Tooltip> */}
 
         <div className="relative ml-2">
           <button

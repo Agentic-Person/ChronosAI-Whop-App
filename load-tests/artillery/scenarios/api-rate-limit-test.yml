@@ -1,0 +1,99 @@
+# Rate Limit Testing
+# Tests rate limit enforcement across all tiers
+
+config:
+  target: "{{ $processEnvironment.TARGET_URL || 'http://localhost:3000' }}"
+  phases:
+    # Test rate limits for each tier
+    - name: "Rate Limit Validation"
+      duration: 300
+      arrivalRate: 20
+
+  ensure:
+    maxErrorRate: 0.5  # Expect many 429s
+
+scenarios:
+  - name: "Basic Tier Rate Limit Test"
+    weight: 40
+    flow:
+      # Login as basic tier user
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+            tier: "basic"
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Rapidly hit chat endpoint (basic: 10/min)
+      - loop:
+          count: 15  # Intentionally exceed limit
+          flow:
+            - post:
+                url: "/api/chat"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  message: "Test message {{ $randomNumber(1, 1000) }}"
+                expect:
+                  - statusCode: [200, 403, 429]  # Accept rate limit
+
+            - think: 4  # 15 requests over ~60s
+
+  - name: "Pro Tier Rate Limit Test"
+    weight: 30
+    flow:
+      # Login as pro tier user
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+            tier: "pro"
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Rapidly hit chat endpoint (pro: 50/min)
+      - loop:
+          count: 60  # Intentionally exceed limit
+          flow:
+            - post:
+                url: "/api/chat"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  message: "Pro test {{ $randomNumber(1, 1000) }}"
+                expect:
+                  - statusCode: [200, 403, 429]
+
+            - think: 1
+
+  - name: "Enterprise Tier (Unlimited)"
+    weight: 30
+    flow:
+      # Login as enterprise user
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+            tier: "enterprise"
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Rapid requests should all succeed
+      - loop:
+          count: 100
+          flow:
+            - post:
+                url: "/api/chat"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  message: "Enterprise test {{ $randomNumber(1, 1000) }}"
+                expect:
+                  - statusCode: 200  # Should never hit rate limit

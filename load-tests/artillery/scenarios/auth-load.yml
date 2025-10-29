@@ -1,0 +1,148 @@
+# Authentication Load Test
+# Tests login, session management, and token refresh under load
+
+config:
+  target: "{{ $processEnvironment.TARGET_URL || 'http://localhost:3000' }}"
+  phases:
+    # Rapid authentication burst (simulating class start time)
+    - name: "Login Burst"
+      duration: 60
+      arrivalRate: 50
+      rampTo: 100
+
+    # Sustained authentication load
+    - name: "Sustained Auth Load"
+      duration: 300
+      arrivalRate: 30
+      maxVusers: 500
+
+    # Spike test - everyone logging in at once
+    - name: "Spike Test"
+      duration: 120
+      arrivalRate: 200
+      maxVusers: 1000
+
+    # Cool down
+    - name: "Cool Down"
+      duration: 60
+      arrivalRate: 10
+
+  ensure:
+    p95: 2000   # Auth should be < 2s at p95
+    p99: 5000   # Auth should be < 5s at p99
+    maxErrorRate: 0.01
+
+scenarios:
+  - name: "Complete Auth Flow"
+    weight: 60
+    flow:
+      # Step 1: Initiate OAuth flow (Whop/Discord)
+      - get:
+          url: "/api/auth/login"
+          followRedirect: false
+          capture:
+            - header: "location"
+              as: "oauthUrl"
+          expect:
+            - statusCode: 302
+
+      # Step 2: Simulate OAuth callback with token
+      - get:
+          url: "/api/auth/callback"
+          qs:
+            code: "{{ generateAuthCode() }}"
+            state: "{{ generateState() }}"
+          followRedirect: true
+          capture:
+            - json: "$.user.id"
+              as: "userId"
+            - json: "$.session.access_token"
+              as: "accessToken"
+            - json: "$.session.refresh_token"
+              as: "refreshToken"
+          expect:
+            - statusCode: 200
+
+      # Step 3: Verify session
+      - get:
+          url: "/api/auth/session"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "user"
+
+      # Step 4: Access protected resource
+      - get:
+          url: "/api/chat/history"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Session Refresh Flow"
+    weight: 30
+    flow:
+      # Get existing session (simulated)
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.session.refresh_token"
+              as: "refreshToken"
+
+      # Refresh access token
+      - post:
+          url: "/api/auth/refresh"
+          json:
+            refresh_token: "{{ refreshToken }}"
+          capture:
+            - json: "$.session.access_token"
+              as: "newAccessToken"
+          expect:
+            - statusCode: 200
+
+      # Use new token
+      - get:
+          url: "/api/auth/session"
+          headers:
+            Authorization: "Bearer {{ newAccessToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Logout Flow"
+    weight: 10
+    flow:
+      # Login
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Use session briefly
+      - get:
+          url: "/api/auth/session"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+
+      - think: 5
+
+      # Logout
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+
+      # Verify token is invalidated
+      - get:
+          url: "/api/auth/session"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 401

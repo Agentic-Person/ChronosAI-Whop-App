@@ -1,0 +1,193 @@
+# Video Upload & Processing Load Test
+# Tests the complete video upload pipeline under concurrent load
+
+config:
+  target: "{{ $processEnvironment.TARGET_URL || 'http://localhost:3000' }}"
+  phases:
+    # Gradual ramp-up to avoid overwhelming storage
+    - name: "Warm up"
+      duration: 120
+      arrivalRate: 1
+      rampTo: 5
+
+    # Normal load - 20 concurrent uploads
+    - name: "Normal Upload Load"
+      duration: 600  # 10 minutes
+      arrivalRate: 5
+      maxVusers: 20
+
+    # Peak load - 50 concurrent uploads
+    - name: "Peak Upload Load"
+      duration: 900  # 15 minutes
+      arrivalRate: 10
+      maxVusers: 50
+
+    # Stress test - 100 concurrent uploads
+    - name: "Stress Test"
+      duration: 1800  # 30 minutes
+      arrivalRate: 20
+      maxVusers: 100
+
+    # Cool down
+    - name: "Cool Down"
+      duration: 120
+      arrivalRate: 2
+
+  processor: "../processors/video-processor.js"
+
+  # Video upload has longer timeouts
+  http:
+    timeout: 120  # 2 minutes for large uploads
+
+  ensure:
+    p95: 30000   # Upload flow < 30s at p95
+    p99: 60000   # Upload flow < 60s at p99
+    maxErrorRate: 0.05  # Allow 5% errors for storage issues
+
+scenarios:
+  - name: "Complete Video Upload Flow"
+    weight: 80
+    flow:
+      # Step 1: Authenticate as creator
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+            role: "creator"
+          capture:
+            - json: "$.user.id"
+              as: "creatorId"
+            - json: "$.session.access_token"
+              as: "accessToken"
+          expect:
+            - statusCode: 200
+
+      # Step 2: Request upload URL
+      - post:
+          url: "/api/video/upload-url"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            filename: "test-video-{{ $randomString(8) }}.mp4"
+            contentType: "video/mp4"
+            fileSize: "{{ generateVideoSize() }}"
+            title: "Load Test Video {{ $randomString(5) }}"
+            description: "Generated for load testing"
+          capture:
+            - json: "$.uploadUrl"
+              as: "uploadUrl"
+            - json: "$.videoId"
+              as: "videoId"
+            - json: "$.storage.used_mb"
+              as: "storageUsed"
+            - json: "$.storage.limit_mb"
+              as: "storageLimit"
+          expect:
+            - statusCode: [200, 403]  # 403 if storage limit exceeded
+            - contentType: json
+
+      # Step 3: Simulate upload to presigned URL
+      # Note: In real test, this would upload actual video data
+      - post:
+          url: "{{ uploadUrl }}"
+          headers:
+            Content-Type: "video/mp4"
+          beforeRequest: "generateVideoBuffer"
+          body: "{{ videoBuffer }}"
+          ifTrue: "{{ uploadUrl }}"  # Only if we got URL
+          expect:
+            - statusCode: [200, 201, 204]
+
+      # Step 4: Confirm upload and trigger processing
+      - post:
+          url: "/api/video/create"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            videoId: "{{ videoId }}"
+          ifTrue: "{{ videoId }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: "video.id"
+            - hasProperty: "video.processingStatus"
+
+      # Step 5: Poll processing status
+      - loop:
+          count: 5
+          whileTrue: "{{ checkProcessingStatus }}"
+          flow:
+            - think: 10  # Wait 10s between polls
+
+            - get:
+                url: "/api/video/status/{{ videoId }}"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                capture:
+                  - json: "$.status"
+                    as: "processingStatus"
+                  - json: "$.progress"
+                    as: "processingProgress"
+                expect:
+                  - statusCode: 200
+
+  - name: "Bulk Video Upload"
+    weight: 20  # Creators uploading multiple videos at once
+    flow:
+      # Authenticate
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+            role: "creator"
+          capture:
+            - json: "$.user.id"
+              as: "creatorId"
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Upload multiple videos sequentially
+      - loop:
+          count: "{{ $randomNumber(3, 7) }}"
+          flow:
+            # Request upload URL
+            - post:
+                url: "/api/video/upload-url"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  filename: "bulk-video-{{ $randomString(8) }}.mp4"
+                  contentType: "video/mp4"
+                  fileSize: "{{ generateVideoSize() }}"
+                  title: "Bulk Upload {{ $randomString(5) }}"
+                capture:
+                  - json: "$.uploadUrl"
+                    as: "uploadUrl"
+                  - json: "$.videoId"
+                    as: "videoId"
+                expect:
+                  - statusCode: [200, 403]
+
+            # Upload video data
+            - post:
+                url: "{{ uploadUrl }}"
+                headers:
+                  Content-Type: "video/mp4"
+                beforeRequest: "generateVideoBuffer"
+                body: "{{ videoBuffer }}"
+                ifTrue: "{{ uploadUrl }}"
+
+            # Confirm upload
+            - post:
+                url: "/api/video/create"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  videoId: "{{ videoId }}"
+                ifTrue: "{{ videoId }}"
+
+            - think: 2  # Brief pause between uploads

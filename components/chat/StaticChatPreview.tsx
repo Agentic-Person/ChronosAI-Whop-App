@@ -58,7 +58,7 @@ export function StaticChatPreview({ className }: StaticChatPreviewProps) {
 
   return (
     <div className={cn('flex flex-col h-full bg-bg-app rounded-xl overflow-hidden border-[3px] border-accent-orange/40 shadow-2xl', className)}>
-      {/* Messages Area */}
+      {/* Messages Area - Dark Background */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {demoMessages.map((message) => (
           <div
@@ -86,7 +86,7 @@ export function StaticChatPreview({ className }: StaticChatPreviewProps) {
                   'rounded-xl px-4 py-3 text-sm leading-relaxed',
                   message.type === 'user'
                     ? 'bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white shadow-lg'
-                    : 'bg-amber-900/20 text-text-primary border border-amber-900/30'
+                    : 'bg-[#827261] text-white border border-[#827261]'
                 )}
               >
                 {message.content}
@@ -137,7 +137,7 @@ export function StaticChatPreview({ className }: StaticChatPreviewProps) {
               className="w-7 h-7 object-contain"
             />
           </div>
-          <div className="bg-amber-900/20 border border-amber-900/30 rounded-xl px-4 py-3 flex items-center gap-1.5">
+          <div className="bg-[#827261] border border-[#827261] rounded-xl px-4 py-3 flex items-center gap-1.5">
             <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
             <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
             <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -145,10 +145,10 @@ export function StaticChatPreview({ className }: StaticChatPreviewProps) {
         </div>
       </div>
 
-      {/* Input Area - Orange Accent */}
+      {/* Input Area - Dark Background */}
       <div className="border-t border-accent-orange/20 bg-bg-app p-4">
         <div className="flex items-center gap-3">
-          <div className="flex-1 rounded-lg border-2 border-accent-orange/30 bg-bg-elevated px-4 py-2.5 text-sm text-text-muted font-medium focus-within:border-accent-orange/60 transition-colors">
+          <div className="flex-1 rounded-lg border-2 border-accent-orange/30 bg-bg-app px-4 py-2.5 text-sm text-text-muted font-medium focus-within:border-accent-orange/60 transition-colors">
             Ask anything about your course videos...
           </div>
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white shadow-lg hover:opacity-90 transition-opacity cursor-pointer">

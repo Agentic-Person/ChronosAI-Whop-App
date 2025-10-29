@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/utils/supabase-client';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { Video } from '@/types/database';
 
 export interface VideoWithStats extends Video {
@@ -45,8 +46,18 @@ export async function updateVideoMetadata(
 export async function deleteVideo(videoId: string) {
   const supabase = createClient();
 
+  // First, get video details for storage cleanup
+  const { data: video } = await supabase
+    .from('videos')
+    .select('video_url, storage_path')
+    .eq('id', videoId)
+    .single();
+
   // Delete video chunks first (cascade)
   await supabase.from('video_chunks').delete().eq('video_id', videoId);
+
+  // Delete video transcriptions
+  await supabase.from('video_transcriptions').delete().eq('video_id', videoId);
 
   // Delete video progress records
   await supabase.from('video_progress').delete().eq('video_id', videoId);
@@ -61,8 +72,20 @@ export async function deleteVideo(videoId: string) {
     throw new Error(`Failed to delete video: ${error.message}`);
   }
 
-  // TODO: Delete from storage (S3/R2)
-  // await deleteFromStorage(video.video_url);
+  // Delete from storage
+  if (video) {
+    try {
+      const { deleteVideoFromStorage, extractStoragePathFromUrl } = await import('@/lib/video/storage-cleanup');
+      const storagePath = video.storage_path || extractStoragePathFromUrl(video.video_url);
+
+      if (storagePath) {
+        await deleteVideoFromStorage(storagePath);
+      }
+    } catch (storageError) {
+      // Log but don't fail - database deletion already succeeded
+      console.error('Failed to delete video from storage:', storageError);
+    }
+  }
 }
 
 /**
@@ -92,10 +115,11 @@ export async function retryProcessing(videoId: string) {
 /**
  * Get all videos for a creator with stats
  */
-export async function getCreatorVideosWithStats(creatorId: string): Promise<VideoWithStats[]> {
-  const supabase = createClient();
+export async function getCreatorVideosWithStats(creatorId: string, courseId?: string | null): Promise<VideoWithStats[]> {
+  // Use admin client to bypass RLS for dev testing
+  const supabase = createAdminClient();
 
-  const { data: videos, error } = await supabase
+  let query = supabase
     .from('videos')
     .select(`
       *,
@@ -105,8 +129,22 @@ export async function getCreatorVideosWithStats(creatorId: string): Promise<Vide
         completion_percentage
       )
     `)
-    .eq('creator_id', creatorId)
+    .eq('creator_id', creatorId);
+
+  // Filter by course if provided
+  if (courseId) {
+    query = query.eq('course_id', courseId);
+  }
+
+  const { data: videos, error } = await query
     .order('created_at', { ascending: false });
+
+  console.log('🔍 DATABASE QUERY RESULT:');
+  console.log('Videos found:', videos?.length || 0);
+  console.log('Error:', error);
+  if (videos) {
+    console.log('Video titles:', videos.map(v => v.title));
+  }
 
   if (error) {
     throw new Error(`Failed to fetch videos: ${error.message}`);
@@ -214,8 +252,17 @@ export async function getVideoById(videoId: string): Promise<Video | null> {
 export async function bulkDeleteVideos(videoIds: string[]) {
   const supabase = createClient();
 
+  // First, get all video storage paths
+  const { data: videos } = await supabase
+    .from('videos')
+    .select('video_url, storage_path')
+    .in('id', videoIds);
+
   // Delete video chunks
   await supabase.from('video_chunks').delete().in('video_id', videoIds);
+
+  // Delete video transcriptions
+  await supabase.from('video_transcriptions').delete().in('video_id', videoIds);
 
   // Delete video progress
   await supabase.from('video_progress').delete().in('video_id', videoIds);
@@ -230,7 +277,24 @@ export async function bulkDeleteVideos(videoIds: string[]) {
     throw new Error(`Failed to bulk delete videos: ${error.message}`);
   }
 
-  // TODO: Delete from storage
+  // Delete from storage
+  if (videos && videos.length > 0) {
+    try {
+      const { bulkDeleteVideosFromStorage, extractStoragePathFromUrl } = await import('@/lib/video/storage-cleanup');
+
+      const storagePaths = videos
+        .map(v => v.storage_path || extractStoragePathFromUrl(v.video_url))
+        .filter(Boolean) as string[];
+
+      if (storagePaths.length > 0) {
+        const result = await bulkDeleteVideosFromStorage(storagePaths);
+        console.log('Storage cleanup result:', result);
+      }
+    } catch (storageError) {
+      // Log but don't fail - database deletion already succeeded
+      console.error('Failed to delete videos from storage:', storageError);
+    }
+  }
 }
 
 /**

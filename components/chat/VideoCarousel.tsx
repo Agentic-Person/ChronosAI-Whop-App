@@ -88,8 +88,17 @@ export function VideoCarousel({
             onClick={() => onVideoClick?.(video.id)}
             className="flex-shrink-0 w-48 cursor-pointer group"
           >
-            {/* Thumbnail - Subtle Orange Border */}
-            <div className="relative aspect-video bg-bg-app/30 rounded-lg overflow-hidden border-2 border-accent-orange/30 hover:border-accent-orange/60 transition-all mb-2 shadow-lg shadow-accent-orange/5">
+            {/* Thumbnail - Holographic Orange Border */}
+            <div
+              className="relative aspect-video bg-bg-app/30 rounded-lg overflow-hidden border-2 border-teal hover:border-accent-orange transition-all mb-2"
+              style={{ boxShadow: 'var(--shadow-teal-glow)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'var(--shadow-teal-glow)';
+              }}
+            >
               {/* Placeholder for actual video thumbnail */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-12 h-12 bg-accent-orange/10 rounded-full flex items-center justify-center group-hover:bg-accent-orange/20 transition-colors">

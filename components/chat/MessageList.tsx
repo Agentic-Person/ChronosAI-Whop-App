@@ -94,8 +94,9 @@ function Message({ message, onFeedback, onVideoClick }: MessageProps) {
             'inline-block rounded-lg px-4 py-2 max-w-[80%]',
             isUser
               ? 'bg-gradient-primary text-white'
-              : 'bg-bg-elevated text-text-primary border border-border-default'
+              : 'bg-bg-elevated text-text-primary border border-teal'
           )}
+          style={!isUser ? { boxShadow: 'var(--shadow-teal-glow)' } : undefined}
         >
           {isUser ? (
             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -183,7 +184,7 @@ function FeedbackButtons({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center py-12">
-      <div className="h-16 w-16 rounded-full bg-accent-orange/10 flex items-center justify-center mb-4">
+      <div className="h-16 w-16 rounded-full bg-accent-orange/10 flex items-center justify-center mb-4 border border-teal" style={{ boxShadow: 'var(--shadow-teal-glow)' }}>
         <Bot className="h-8 w-8 text-accent-orange" />
       </div>
       <h3 className="text-lg font-semibold text-text-primary mb-2">
@@ -212,7 +213,16 @@ function EmptyState() {
  */
 function SuggestedQuestion({ text }: { text: string }) {
   return (
-    <div className="text-left p-3 bg-bg-elevated rounded-lg border border-border-default text-sm text-text-secondary hover:bg-bg-hover hover:border-accent-orange/50 cursor-pointer transition-all">
+    <div
+      className="text-left p-3 bg-bg-elevated rounded-lg border border-teal text-sm text-text-secondary hover:bg-bg-hover hover:border-accent-orange cursor-pointer transition-all"
+      style={{ boxShadow: 'var(--shadow-teal-glow)' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = 'var(--shadow-teal-glow)';
+      }}
+    >
       "{text}"
     </div>
   );

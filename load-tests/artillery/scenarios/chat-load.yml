@@ -1,0 +1,148 @@
+# Chat API Load Test Scenario
+# Tests the RAG chat system with vector search under load
+
+config:
+  target: "{{ $processEnvironment.TARGET_URL || 'http://localhost:3000' }}"
+  phases:
+    # Warm-up phase
+    - name: "Warm up"
+      duration: 60
+      arrivalRate: 5
+      rampTo: 10
+
+    # Normal load - 100 concurrent users
+    - name: "Normal Load"
+      duration: 300  # 5 minutes
+      arrivalRate: 20
+      maxVusers: 100
+
+    # Peak load - 500 concurrent users
+    - name: "Peak Load"
+      duration: 600  # 10 minutes
+      arrivalRate: 50
+      maxVusers: 500
+
+    # Stress test - 1000 concurrent users
+    - name: "Stress Test"
+      duration: 600  # 10 minutes
+      arrivalRate: 100
+      maxVusers: 1000
+
+    # Cool down
+    - name: "Cool Down"
+      duration: 60
+      arrivalRate: 5
+
+  processor: "../processors/chat-processor.js"
+
+  # Performance targets specific to chat
+  ensure:
+    p95: 5000   # Chat should respond < 5s at p95
+    p99: 10000  # Chat should respond < 10s at p99
+    maxErrorRate: 0.01
+
+scenarios:
+  - name: "Chat Conversation Flow"
+    weight: 70  # 70% of traffic
+    flow:
+      # Step 1: Get or create auth session
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.user.id"
+              as: "userId"
+            - json: "$.session.access_token"
+              as: "accessToken"
+          expect:
+            - statusCode: 200
+
+      # Step 2: Start a new chat session
+      - post:
+          url: "/api/chat"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            message: "{{ generateChatQuestion() }}"
+            context_type: "general"
+          capture:
+            - json: "$.data.session_id"
+              as: "sessionId"
+            - json: "$.data.message_id"
+              as: "messageId"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: "data.content"
+            - hasProperty: "data.video_references"
+
+      # Step 3: Follow-up questions in same session
+      - loop:
+          count: 3
+          flow:
+            - think: 2  # User reads response
+
+            - post:
+                url: "/api/chat"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  message: "{{ generateFollowUpQuestion() }}"
+                  session_id: "{{ sessionId }}"
+                  context_type: "follow_up"
+                expect:
+                  - statusCode: [200, 403]  # 403 if rate limit hit
+                  - contentType: json
+
+      # Step 4: Get chat history
+      - get:
+          url: "/api/chat/session/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "Quick Single Question"
+    weight: 30  # 30% of traffic - students asking one-off questions
+    flow:
+      # Authenticate
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.user.id"
+              as: "userId"
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Ask single question
+      - post:
+          url: "/api/chat"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            message: "{{ generateChatQuestion() }}"
+            context_type: "quick"
+          expect:
+            - statusCode: [200, 403]
+            - contentType: json
+
+      # Optional: Submit feedback
+      - post:
+          url: "/api/chat/feedback"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            message_id: "{{ messageId }}"
+            rating: "{{ $randomNumber(1, 5) }}"
+            helpful: "{{ $randomBoolean() }}"
+          ifTrue: "{{ $randomBoolean() }}"  # 50% submit feedback
+          expect:
+            - statusCode: 200

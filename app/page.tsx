@@ -63,14 +63,15 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
               <a href="/api/whop/auth/login">
-                <Button size="lg" icon={ArrowRight}>
+                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white">
                   Sign In with Whop
-                </Button>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </a>
               <Link href="#features">
-                <Button size="lg" variant="secondary">
+                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white">
                   Learn More
-                </Button>
+                </button>
               </Link>
             </div>
           </motion.div>

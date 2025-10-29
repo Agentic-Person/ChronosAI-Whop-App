@@ -114,8 +114,8 @@ export default function DashboardPage() {
                   {stats.completedVideos} completed
                 </p>
               </div>
-              <div className="w-12 h-12 bg-accent-cyan/10 rounded-xl flex items-center justify-center">
-                <Video className="w-6 h-6 text-accent-cyan" />
+              <div className="w-12 h-12 bg-accent-yellow/10 rounded-xl flex items-center justify-center">
+                <Video className="w-6 h-6 text-accent-yellow" />
               </div>
             </div>
           </Card>
@@ -152,8 +152,8 @@ export default function DashboardPage() {
                 <p className="text-3xl font-bold">{stats.totalXP.toLocaleString()}</p>
                 <p className="text-sm text-accent-purple mt-1">Level 12</p>
               </div>
-              <div className="w-12 h-12 bg-accent-purple/10 rounded-xl flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-accent-purple" />
+              <div className="w-12 h-12 bg-accent-yellow/10 rounded-xl flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-accent-yellow" />
               </div>
             </div>
           </Card>
@@ -168,13 +168,13 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-text-muted text-sm mb-1">CHRONOS Tokens</p>
-                <p className="text-3xl font-bold text-accent-green">
+                <p className="text-3xl font-bold text-accent-yellow">
                   {stats.totalCHRONOS.toLocaleString()}
                 </p>
                 <p className="text-sm text-text-muted mt-1">≈ ${(stats.totalCHRONOS * 0.001).toFixed(2)}</p>
               </div>
-              <div className="w-12 h-12 bg-accent-green/10 rounded-xl flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-accent-green" />
+              <div className="w-12 h-12 bg-accent-yellow/10 rounded-xl flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-accent-yellow" />
               </div>
             </div>
           </Card>

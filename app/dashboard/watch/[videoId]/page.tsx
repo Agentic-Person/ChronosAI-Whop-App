@@ -18,11 +18,13 @@ import {
   ChevronLeft,
   Trophy,
   Coins,
+  User,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { SuggestedQuestions } from '@/components/chat/SuggestedQuestions';
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
@@ -63,13 +65,25 @@ export default function VideoPlayerPage() {
   const [showControls, setShowControls] = useState(true);
   const [rewardNotification, setRewardNotification] = useState<RewardNotification | null>(null);
 
-  // Chat state
+  // Chat state - Pre-populated demo conversation
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       role: 'assistant',
       content:
-        "Hi! I'm your AI learning assistant. Ask me anything about this video and I'll help you understand it better. I can also point you to specific timestamps!",
+        "Hi! I'm your AI learning assistant. Ask me anything about this video and I'll help you understand it better!",
+    },
+    {
+      id: '2',
+      role: 'user',
+      content: 'Can you explain what variables are and how they work?',
+    },
+    {
+      id: '3',
+      role: 'assistant',
+      content:
+        'Great question! Variables are containers for storing data values. In this video at [2:15], the instructor explains that you can think of them like labeled boxes where you can store different types of information - numbers, text, or more complex data structures.',
+      videoTimestamp: 135, // 2:15
     },
   ]);
   const [inputMessage, setInputMessage] = useState('');
@@ -213,36 +227,14 @@ export default function VideoPlayerPage() {
     return () => clearInterval(interval);
   }, [isPlaying, currentTime, duration]);
 
-  return (
-    <div className="h-screen flex flex-col bg-black">
-      {/* Breadcrumb Header */}
-      <div className="bg-bg-app border-b border-border-default px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
-          <div className="hidden md:flex items-center gap-2 text-sm text-text-muted">
-            <span>{video.module}</span>
-            <span>›</span>
-            <span>{video.week}</span>
-            <span>›</span>
-            <span>{video.day}</span>
-          </div>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowChat(!showChat)}
-          className="lg:hidden"
-        >
-          <MessageSquare className="w-4 h-4" />
-        </Button>
-      </div>
+  const handleQuestionClick = (question: string) => {
+    setInputMessage(question);
+  };
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Video Player */}
-        <div className="flex-1 relative bg-black flex items-center justify-center">
+  return (
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-bg-app">
+      {/* Video Player Section - Top */}
+      <div className="flex-1 relative bg-black flex items-center justify-center min-h-0">
           {/* Mock Video Display */}
           <div
             className="relative w-full h-full flex items-center justify-center"
@@ -294,60 +286,56 @@ export default function VideoPlayerPage() {
                     </div>
                   </div>
 
-                  {/* Control Buttons */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={togglePlay}
-                        className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
-                      >
-                        {isPlaying ? (
-                          <Pause className="w-6 h-6 text-white" />
+                  {/* Control Buttons - Centered */}
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      onClick={togglePlay}
+                      className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-6 h-6 text-white" />
+                      ) : (
+                        <Play className="w-6 h-6 text-white ml-0.5" />
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleNextVideo}
+                      className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
+                    >
+                      <SkipForward className="w-5 h-5 text-white" />
+                    </button>
+
+                    {/* Volume */}
+                    <div className="flex items-center gap-2 group">
+                      <button onClick={toggleMute} className="text-white hover:text-accent-cyan">
+                        {isMuted || volume === 0 ? (
+                          <VolumeX size={20} />
                         ) : (
-                          <Play className="w-6 h-6 text-white ml-0.5" />
+                          <Volume2 size={20} />
                         )}
                       </button>
-
-                      <button
-                        onClick={handleNextVideo}
-                        className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
-                      >
-                        <SkipForward className="w-5 h-5 text-white" />
-                      </button>
-
-                      {/* Volume */}
-                      <div className="flex items-center gap-2 group">
-                        <button onClick={toggleMute} className="text-white hover:text-accent-cyan">
-                          {isMuted || volume === 0 ? (
-                            <VolumeX size={20} />
-                          ) : (
-                            <Volume2 size={20} />
-                          )}
-                        </button>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.1"
-                          value={volume}
-                          onChange={handleVolumeChange}
-                          className="w-20 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        />
-                      </div>
-
-                      <span className="text-white/70 text-sm">
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={volume}
+                        onChange={handleVolumeChange}
+                        className="w-20 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <button className="text-white hover:text-accent-cyan">
-                        <Settings size={20} />
-                      </button>
-                      <button onClick={toggleFullscreen} className="text-white hover:text-accent-cyan">
-                        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                      </button>
-                    </div>
+                    <span className="text-white/70 text-sm">
+                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </span>
+
+                    <button className="text-white hover:text-accent-cyan">
+                      <Settings size={20} />
+                    </button>
+                    <button onClick={toggleFullscreen} className="text-white hover:text-accent-cyan">
+                      {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    </button>
                   </div>
                 </motion.div>
               )}
@@ -386,104 +374,130 @@ export default function VideoPlayerPage() {
           </div>
         </div>
 
-        {/* AI Chat Sidebar */}
-        <AnimatePresence>
-          {showChat && (
-            <motion.div
-              initial={{ x: 400, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 400, opacity: 0 }}
-              className="w-full lg:w-96 bg-bg-app border-l border-border-default flex flex-col"
-            >
-              {/* Chat Header */}
-              <div className="p-4 border-b border-border-default flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-bg-app" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">AI Assistant</h3>
-                    <p className="text-xs text-text-muted">Ask about the video</p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowChat(false)}
-                  className="lg:hidden"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
+      {/* Bottom Section - Split into Suggestions (Left) and Chat (Right) */}
+      <div className="h-80 flex border-t-2 border-accent-orange/30">
+        {/* Suggested Questions Panel - Left */}
+        <div className="w-96 flex-shrink-0">
+          <SuggestedQuestions onQuestionClick={handleQuestionClick} />
+        </div>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      'flex',
-                      message.role === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'max-w-[80%] rounded-lg p-3',
-                        message.role === 'user'
-                          ? 'bg-accent-cyan text-bg-app'
-                          : 'bg-bg-card border border-border-default'
-                      )}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      {message.videoTimestamp !== undefined && (
-                        <button
-                          onClick={() => handleTimestampClick(message.videoTimestamp!)}
-                          className="mt-2 text-xs text-accent-cyan hover:underline"
-                        >
-                          Jump to {formatTime(message.videoTimestamp)}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-bg-card border border-border-default rounded-lg p-3">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-text-muted rounded-full animate-bounce" />
-                        <div
-                          className="w-2 h-2 bg-text-muted rounded-full animate-bounce"
-                          style={{ animationDelay: '0.1s' }}
-                        />
-                        <div
-                          className="w-2 h-2 bg-text-muted rounded-full animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
-                        />
-                      </div>
-                    </div>
+        {/* AI Chat Panel - Right */}
+        <div className="flex-1 flex flex-col bg-bg-app">
+          {/* Chat Header */}
+          <div className="p-4 border-b border-border-default flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <img
+                src="/images/logo_brand/chronos_icon_grn.png"
+                alt="Chronos AI"
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold text-text-primary">AI Assistant</h3>
+              <p className="text-xs text-text-muted">Ask about the video</p>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={cn(
+                  'flex gap-3 items-start',
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                )}
+              >
+                {/* Chronos Icon for AI */}
+                {message.role === 'assistant' && (
+                  <div className="flex-shrink-0 mt-1">
+                    <img
+                      src="/images/logo_brand/chronos_icon_grn.png"
+                      alt="Chronos AI"
+                      className="w-7 h-7 object-contain"
+                    />
                   </div>
                 )}
-                <div ref={chatEndRef} />
-              </div>
 
-              {/* Input */}
-              <div className="p-4 border-t border-border-default">
-                <div className="flex gap-2">
-                  <Input
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Ask about the video..."
-                    className="flex-1"
+                <div className="flex flex-col gap-2 max-w-[75%]">
+                  {/* Message Bubble */}
+                  <div
+                    className={cn(
+                      'rounded-xl px-4 py-3 text-sm leading-relaxed',
+                      message.role === 'user'
+                        ? 'bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white shadow-lg'
+                        : 'bg-[#827261] text-white border border-[#827261]'
+                    )}
+                  >
+                    {message.content}
+                  </div>
+
+                  {/* Video Timestamp Reference */}
+                  {message.videoTimestamp !== undefined && (
+                    <button
+                      onClick={() => handleTimestampClick(message.videoTimestamp!)}
+                      className="group flex items-center gap-3 px-3 py-2.5 bg-amber-900/10 border border-amber-900/20 rounded-lg hover:border-accent-orange/50 transition-all cursor-pointer self-start"
+                    >
+                      <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-accent-orange/10 flex items-center justify-center group-hover:bg-accent-orange/20 transition-all">
+                        <Play className="h-3.5 w-3.5 text-accent-orange" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-text-primary truncate group-hover:text-accent-orange transition-colors">
+                          {video.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-text-muted">
+                          <span className="font-mono">{formatTime(message.videoTimestamp)}</span>
+                          <span>•</span>
+                          <span>{video.duration}</span>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {/* User Icon */}
+                {message.role === 'user' && (
+                  <div className="flex-shrink-0 h-7 w-7 rounded-lg bg-accent-orange/20 border border-accent-orange/40 flex items-center justify-center mt-1">
+                    <User className="h-4 w-4 text-accent-orange" />
+                  </div>
+                )}
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex gap-3 items-start justify-start opacity-70">
+                <div className="flex-shrink-0 mt-1">
+                  <img
+                    src="/images/logo_brand/chronos_icon_grn.png"
+                    alt="Chronos AI"
+                    className="w-7 h-7 object-contain"
                   />
-                  <Button onClick={handleSendMessage} disabled={!inputMessage.trim()}>
-                    <Send className="w-4 h-4" />
-                  </Button>
+                </div>
+                <div className="bg-[#827261] border border-[#827261] rounded-xl px-4 py-3 flex items-center gap-1.5">
+                  <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="p-4 border-t border-border-default">
+            <div className="flex gap-2">
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Ask about the video..."
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} disabled={!inputMessage.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

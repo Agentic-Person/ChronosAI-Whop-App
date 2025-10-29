@@ -1,0 +1,252 @@
+/**
+ * Enhanced Health Check Endpoint - Production Version
+ *
+ * USAGE: Rename this file to route.ts to replace the basic health check
+ *
+ * Monitors status of all infrastructure services with detailed metrics
+ *
+ * Endpoints:
+ * - GET /api/health - Full health check
+ * - GET /api/health?check=basic - Basic health check only
+ * - GET /api/health?check=database - Database only
+ * - GET /api/health?check=cache - Cache only
+ * - GET /api/health?system=true - Include system metrics
+ */
+
+import { NextResponse } from 'next/server';
+import { checkDatabaseHealth } from '@/lib/infrastructure/database/connection-pool';
+import { cache } from '@/lib/infrastructure/cache/redis-client';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
+interface HealthCheckResult {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  version?: string;
+  uptime?: number;
+  environment?: string;
+  deployment?: string;
+  checks: {
+    database?: {
+      status: 'ok' | 'error' | 'skipped';
+      latency?: number;
+      error?: string;
+      connectionPool?: {
+        active?: number;
+        idle?: number;
+        total?: number;
+      };
+    };
+    cache?: {
+      status: 'ok' | 'error' | 'skipped';
+      latency?: number;
+      error?: string;
+      memoryUsage?: string;
+    };
+    storage?: {
+      status: 'ok' | 'error' | 'skipped';
+      latency?: number;
+      error?: string;
+    };
+    ai?: {
+      status: 'ok' | 'error' | 'skipped';
+      providers?: {
+        anthropic?: 'ok' | 'error';
+        openai?: 'ok' | 'error';
+      };
+    };
+  };
+  system?: {
+    memory?: {
+      used: number;
+      total: number;
+      percentage: number;
+    };
+    nodeVersion?: string;
+  };
+}
+
+// Track service start time
+const startTime = Date.now();
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const checkType = searchParams.get('check') || 'all';
+  const includeSystem = searchParams.get('system') === 'true';
+
+  const result: HealthCheckResult = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    environment: process.env.NODE_ENV,
+    deployment: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7),
+    checks: {},
+  };
+
+  try {
+    // Basic health check - always runs
+    if (checkType === 'basic') {
+      return NextResponse.json(
+        {
+          status: 'healthy',
+          timestamp: result.timestamp,
+          uptime: result.uptime,
+        },
+        { status: 200 }
+      );
+    }
+
+    // Database health check
+    if (checkType === 'all' || checkType === 'database') {
+      try {
+        const dbStartTime = Date.now();
+        const dbHealth = await checkDatabaseHealth();
+        const dbLatency = Date.now() - dbStartTime;
+
+        result.checks.database = {
+          status: dbHealth.healthy ? 'ok' : 'error',
+          latency: dbLatency,
+          error: dbHealth.error,
+          connectionPool: {
+            active: dbHealth.activeConnections || 0,
+            idle: dbHealth.idleConnections || 0,
+            total: dbHealth.totalConnections || 0,
+          },
+        };
+      } catch (error) {
+        result.checks.database = {
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Database check failed',
+        };
+      }
+    }
+
+    // Cache health check
+    if (checkType === 'all' || checkType === 'cache') {
+      try {
+        const cacheStartTime = Date.now();
+        const cacheHealth = await cache.healthCheck();
+        const cacheLatency = Date.now() - cacheStartTime;
+
+        result.checks.cache = {
+          status: cacheHealth.healthy ? 'ok' : 'error',
+          latency: cacheLatency,
+          error: cacheHealth.error,
+        };
+
+        // Get cache memory usage if available
+        if (cacheHealth.info) {
+          result.checks.cache.memoryUsage = cacheHealth.info.memoryUsage;
+        }
+      } catch (error) {
+        result.checks.cache = {
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Cache check failed',
+        };
+      }
+    }
+
+    // Storage health check (Supabase Storage)
+    if (checkType === 'all' || checkType === 'storage') {
+      try {
+        const storageStartTime = Date.now();
+        // Quick ping to Supabase storage
+        const storageCheck = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/bucket`,
+          {
+            method: 'GET',
+            headers: {
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+            },
+          }
+        );
+        const storageLatency = Date.now() - storageStartTime;
+
+        result.checks.storage = {
+          status: storageCheck.ok ? 'ok' : 'error',
+          latency: storageLatency,
+          error: !storageCheck.ok ? `HTTP ${storageCheck.status}` : undefined,
+        };
+      } catch (error) {
+        result.checks.storage = {
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Storage check failed',
+        };
+      }
+    }
+
+    // AI services health check
+    if (checkType === 'all' || checkType === 'ai') {
+      const aiProviders: { anthropic?: 'ok' | 'error'; openai?: 'ok' | 'error' } = {};
+
+      // Check Anthropic API
+      if (process.env.ANTHROPIC_API_KEY) {
+        aiProviders.anthropic = 'ok'; // Simplified check - actual API call would be expensive
+      }
+
+      // Check OpenAI API
+      if (process.env.OPENAI_API_KEY) {
+        aiProviders.openai = 'ok'; // Simplified check
+      }
+
+      result.checks.ai = {
+        status: Object.keys(aiProviders).length > 0 ? 'ok' : 'error',
+        providers: aiProviders,
+      };
+    }
+
+    // System metrics (optional)
+    if (includeSystem) {
+      const memUsage = process.memoryUsage();
+      result.system = {
+        memory: {
+          used: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+          total: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
+          percentage: Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100),
+        },
+        nodeVersion: process.version,
+      };
+    }
+
+    // Determine overall health status
+    const checks = Object.values(result.checks);
+    const errorCount = checks.filter(
+      (check) => check && 'status' in check && check.status === 'error'
+    ).length;
+    const totalChecks = checks.filter((check) => check && 'status' in check).length;
+
+    if (errorCount === 0) {
+      result.status = 'healthy';
+    } else if (errorCount < totalChecks) {
+      result.status = 'degraded';
+    } else {
+      result.status = 'unhealthy';
+    }
+
+    // Determine HTTP status code
+    const httpStatus = result.status === 'unhealthy' ? 503 : 200;
+
+    // Add response headers for monitoring
+    const headers = {
+      'Cache-Control': 'no-store, must-revalidate',
+      'X-Health-Status': result.status,
+      'X-Response-Time': `${Date.now() - new Date(result.timestamp).getTime()}ms`,
+    };
+
+    return NextResponse.json(result, { status: httpStatus, headers });
+  } catch (error) {
+    // Critical error during health check
+    return NextResponse.json(
+      {
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Health check failed',
+      },
+      { status: 503 }
+    );
+  }
+}

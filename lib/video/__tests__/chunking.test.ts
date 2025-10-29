@@ -71,6 +71,7 @@ describe('IntelligentChunker', () => {
         targetWords: 100,
         minWords: 10,
         maxWords: 200,
+        overlapWords: 5, // Must be less than minWords
       });
 
       const chunks = chunker.chunk(mockTranscript);

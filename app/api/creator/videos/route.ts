@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const creatorId = searchParams.get('creatorId');
+    const courseId = searchParams.get('courseId');
     const search = searchParams.get('search');
     const status = searchParams.get('status') as 'all' | 'processing' | 'completed' | 'failed' | null;
 
@@ -33,7 +34,12 @@ export async function GET(request: NextRequest) {
     } else if (status) {
       videos = await filterVideosByStatus(creatorId, status);
     } else {
-      videos = await getCreatorVideosWithStats(creatorId);
+      videos = await getCreatorVideosWithStats(creatorId, courseId);
+    }
+
+    // Filter by courseId if provided (for searches and status filters)
+    if (courseId && videos) {
+      videos = videos.filter((v: any) => v.course_id === courseId);
     }
 
     return NextResponse.json(videos, {

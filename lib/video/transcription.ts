@@ -66,28 +66,35 @@ async function downloadVideo(videoUrl: string): Promise<string> {
 
 /**
  * Extract audio from video file using ffmpeg
- * Note: This is a placeholder. In production, you'd use fluent-ffmpeg or similar
  */
 async function extractAudioFromVideo(videoPath: string): Promise<string> {
-  const audioPath = videoPath.replace(/\.[^.]+$/, '.wav');
+  // Import the audio extractor module
+  const { extractAudioFromVideo: extractAudio, checkFFmpegAvailable } = await import('./audio-extractor');
 
-  // This is a simplified version. In production, use fluent-ffmpeg:
-  //
-  // return new Promise((resolve, reject) => {
-  //   ffmpeg(videoPath)
-  //     .audioChannels(1)
-  //     .audioFrequency(16000)
-  //     .format('wav')
-  //     .on('end', () => resolve(audioPath))
-  //     .on('error', reject)
-  //     .save(audioPath);
-  // });
+  // Check if ffmpeg is available
+  const ffmpegAvailable = await checkFFmpegAvailable();
 
-  // For now, we'll assume the video URL is already accessible for transcription
-  // In a real implementation, you'd extract audio first
-  logInfo('Audio extraction (placeholder)', { videoPath, audioPath });
+  if (!ffmpegAvailable) {
+    // Fallback: Try to use video directly if ffmpeg is not available
+    logInfo('ffmpeg not available, attempting direct video transcription', { videoPath });
+    return videoPath;
+  }
 
-  return videoPath; // Return video path for direct transcription
+  try {
+    // Extract audio using ffmpeg
+    const audioPath = await extractAudio(videoPath, {
+      audioCodec: 'wav',
+      sampleRate: 16000,
+      channels: 1,
+    });
+
+    logInfo('Audio extraction completed successfully', { videoPath, audioPath });
+    return audioPath;
+  } catch (error: any) {
+    logError('Audio extraction failed, falling back to direct video transcription', error);
+    // Fallback to video if extraction fails
+    return videoPath;
+  }
 }
 
 /**
@@ -112,13 +119,25 @@ async function splitAudioFile(
     return [audioPath];
   }
 
-  // TODO: Implement audio splitting using ffmpeg
-  // For now, throw error if file is too large
-  throw new TranscriptionError(
-    `Audio file exceeds ${maxSizeMB}MB limit. Splitting not yet implemented.`,
-    undefined,
-    { fileSize, maxSizeBytes }
-  );
+  // Import the audio splitter
+  const { splitAudioFile: splitAudio, cleanupAudioChunks } = await import('./audio-extractor');
+
+  try {
+    logInfo('Audio file exceeds size limit, splitting', { audioPath, fileSize, maxSizeMB });
+
+    // Split the audio file
+    const chunks = await splitAudio(audioPath, maxSizeMB);
+
+    // Return array of chunk paths
+    return chunks.map(chunk => chunk.path);
+  } catch (error: any) {
+    logError('Failed to split audio file', error);
+    throw new TranscriptionError(
+      `Audio file exceeds ${maxSizeMB}MB limit and could not be split: ${error.message}`,
+      undefined,
+      { fileSize, maxSizeBytes, error: error.message }
+    );
+  }
 }
 
 /**

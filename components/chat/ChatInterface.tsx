@@ -13,7 +13,8 @@ import { MessageInput } from './MessageInput';
 import { MessageCircle, X, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 import toast from 'react-hot-toast';
-import { showRewardToast } from '@/components/student/RewardNotification';
+// TODO: Re-enable for post-MVP Chronos token feature
+// import { showRewardToast } from '@/components/student/RewardNotification';
 import { UpgradePrompt } from '@/components/features/UpgradePrompt';
 import { MembershipTier } from '@/lib/features/types';
 
@@ -165,10 +166,11 @@ export function ChatInterface({
         }
       }
 
+      // TODO: Re-enable for post-MVP Chronos token feature
       // Show CHRONOS reward notification if tokens were awarded
-      if (data.meta?.chronos_awarded) {
-        showRewardToast(data.meta.chronos_awarded, 'chat_message');
-      }
+      // if (data.meta?.chronos_awarded) {
+      //   showRewardToast(data.meta.chronos_awarded, 'chat_message');
+      // }
 
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -256,7 +258,7 @@ export function ChatInterface({
   // Embedded mode (full width)
   return (
     <>
-      <div className={cn('flex flex-col h-full bg-bg-app overflow-hidden', className)}>
+      <div className={cn('flex flex-col h-full overflow-hidden', className)}>
         {/* Usage Banner for FREE Tier */}
         {usage?.is_free_tier && usage.remaining >= 0 && (
           <div

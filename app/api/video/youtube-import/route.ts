@@ -40,7 +40,7 @@ function parseYouTubeDuration(isoDuration: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { youtubeUrl } = await req.json();
+    const { youtubeUrl, courseId } = await req.json();
 
     if (!youtubeUrl || typeof youtubeUrl !== 'string') {
       return NextResponse.json(
@@ -163,9 +163,84 @@ export async function POST(req: NextRequest) {
       // Continue without transcript - not a critical error
     }
 
-    // Get creator ID (using dev bypass for now)
-    // Generate a valid UUID for dev testing
-    const creatorId = req.headers.get('x-creator-id') || '00000000-0000-0000-0000-000000000001';
+    // PRODUCTION: Get creator ID from authenticated session
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Get creator record from whop_user_id
+    const { data: creator, error: creatorError } = await supabase
+      .from('creators')
+      .select('id')
+      .eq('whop_user_id', user.id)
+      .single();
+
+    if (creatorError || !creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Creator account not found' },
+        { status: 403 }
+      );
+    }
+
+    const creatorId = creator.id;
+    // PRODUCTION: Get creator ID from authenticated session
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Get creator record from whop_user_id
+    const { data: creator, error: creatorError } = await supabase
+      .from('creators')
+      .select('id')
+      .eq('whop_user_id', user.id)
+      .single();
+
+    if (creatorError || !creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Creator account not found' },
+        { status: 403 }
+      );
+    }
+
+    const creatorId = creator.id;
+    // PRODUCTION: Get creator ID from authenticated session
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Get creator record from whop_user_id
+    const { data: creator, error: creatorError } = await supabase
+      .from('creators')
+      .select('id')
+      .eq('whop_user_id', user.id)
+      .single();
+
+    if (creatorError || !creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Creator account not found' },
+        { status: 403 }
+      );
+    }
+
+    const creatorId = creator.id;
 
     // Store video in database - using ONLY columns from original schema
     // Use admin client to bypass RLS for backend video creation
@@ -176,6 +251,7 @@ export async function POST(req: NextRequest) {
       .from('videos')
       .insert({
         creator_id: creatorId,
+        course_id: courseId || null, // Add course_id if provided
         title: snippet.title,
         description: snippet.description?.substring(0, 500) || '',
         video_url: youtubeUrlFull,

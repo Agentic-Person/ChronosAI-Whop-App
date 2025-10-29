@@ -45,6 +45,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard' },
     { icon: MessageSquare, label: 'AI Chat', href: '/dashboard/student/chat' },
+    { icon: BarChart, label: 'Creator', href: '/dashboard/creator/videos' },
   ];
 
   const handleLogout = async () => {
@@ -83,7 +84,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-2">
               {menuItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -91,10 +92,10 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all border-2',
                       isActive
-                        ? 'bg-bg-hover text-accent-cyan'
-                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                        ? 'border-[#827261] bg-[#827261]/10 text-text-primary'
+                        : 'border-[#827261] text-text-secondary hover:bg-[#827261]/5 hover:text-text-primary'
                     )}
                   >
                     <item.icon size={18} />
@@ -118,14 +119,15 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                   <span className="text-sm font-semibold">{user.xp} XP</span>
                 </Link>
 
+                {/* TODO: Re-enable for post-MVP Chronos token feature */}
                 {/* CHRONOS Balance */}
-                <Link
+                {/* <Link
                   href="/dashboard/wallet"
                   className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card hover:bg-bg-hover transition-colors"
                 >
                   <Coins size={18} className="text-accent-green" />
                   <span className="text-sm font-semibold">{user.chronos}</span>
-                </Link>
+                </Link> */}
 
                 {/* User Avatar & Menu */}
                 <div className="relative">
@@ -232,7 +234,8 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                   </div>
                   <span className="text-sm font-semibold">{user.xp}</span>
                 </Link>
-                <Link
+                {/* TODO: Re-enable for post-MVP Chronos token feature */}
+                {/* <Link
                   href="/dashboard/wallet"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center justify-between px-3 py-2 rounded-lg bg-bg-card"
@@ -242,7 +245,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                     <span className="text-sm">CHRONOS</span>
                   </div>
                   <span className="text-sm font-semibold">{user.chronos}</span>
-                </Link>
+                </Link> */}
               </div>
             )}
           </div>

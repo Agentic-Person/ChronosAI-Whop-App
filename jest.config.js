@@ -15,6 +15,8 @@ const customJestConfig = {
   testMatch: [
     '<rootDir>/tests/unit/**/*.test.ts',
     '<rootDir>/tests/unit/**/*.test.tsx',
+    '<rootDir>/lib/**/__tests__/**/*.test.ts',
+    '<rootDir>/lib/**/__tests__/**/*.test.tsx',
   ],
   collectCoverageFrom: [
     'lib/**/*.{js,jsx,ts,tsx}',
@@ -23,6 +25,10 @@ const customJestConfig = {
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/.next/**',
+  ],
+  // Transform ES modules that Jest can't parse
+  transformIgnorePatterns: [
+    'node_modules/(?!(uncrypto|@upstash|@vercel/kv)/)',
   ],
 }
 

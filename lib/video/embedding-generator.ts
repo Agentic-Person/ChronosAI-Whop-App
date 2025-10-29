@@ -9,6 +9,7 @@
  * - Database storage
  */
 
+import 'openai/shims/node';
 import OpenAI from 'openai';
 import { getSupabaseAdmin } from '@/lib/infrastructure/database/connection-pool';
 import { cache } from '@/lib/infrastructure/cache/redis-client';

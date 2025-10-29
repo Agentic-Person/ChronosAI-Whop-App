@@ -3,7 +3,7 @@
  * Provides exponential backoff retry logic for API calls
  */
 
-import { logInfo, logWarning } from '@/lib/infrastructure/monitoring/logger';
+import { logInfo, logWarn } from '@/lib/infrastructure/monitoring/logger';
 
 /**
  * Retry options configuration
@@ -113,7 +113,7 @@ export async function retryWithBackoff<T>(
 
       // Check if this is the last attempt
       if (attempt === opts.maxRetries - 1) {
-        logWarning('All retries exhausted', {
+        logWarn('All retries exhausted', {
           attempts: opts.maxRetries,
           error: error.message,
         });
@@ -122,7 +122,7 @@ export async function retryWithBackoff<T>(
 
       // Check if error is retryable
       if (!isRetryableError(error, opts.retryableErrors)) {
-        logWarning('Non-retryable error encountered', {
+        logWarn('Non-retryable error encountered', {
           error: error.message,
           status: error.status || error.response?.status,
         });
@@ -132,7 +132,7 @@ export async function retryWithBackoff<T>(
       // Calculate delay for next attempt
       const delay = calculateDelay(attempt, opts.baseDelay, opts.maxDelay);
 
-      logWarning(`Retrying after error (attempt ${attempt + 1}/${opts.maxRetries})`, {
+      logWarn(`Retrying after error (attempt ${attempt + 1}/${opts.maxRetries})`, {
         error: error.message,
         status: error.status || error.response?.status,
         retryDelayMs: delay,
@@ -163,7 +163,7 @@ export async function retryOpenAI<T>(
     maxDelay: 30000,
     retryableErrors: [429, 500, 502, 503, 504], // OpenAI specific errors
     onRetry: (attempt, error) => {
-      logWarning(`OpenAI API retry attempt ${attempt}`, {
+      logWarn(`OpenAI API retry attempt ${attempt}`, {
         error: error.message,
       });
     },
@@ -183,7 +183,7 @@ export async function retryAnthropic<T>(
     maxDelay: 30000,
     retryableErrors: [429, 500, 502, 503, 504, 529], // 529 = overloaded
     onRetry: (attempt, error) => {
-      logWarning(`Anthropic API retry attempt ${attempt}`, {
+      logWarn(`Anthropic API retry attempt ${attempt}`, {
         error: error.message,
       });
     },

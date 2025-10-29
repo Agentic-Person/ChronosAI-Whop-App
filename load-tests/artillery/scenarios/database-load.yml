@@ -1,0 +1,138 @@
+# Database Connection Pool & Query Load Test
+# Tests Supabase connection limits and query performance
+
+config:
+  target: "{{ $processEnvironment.TARGET_URL || 'http://localhost:3000' }}"
+  phases:
+    # Test connection pool gradual fill
+    - name: "Pool Fill"
+      duration: 120
+      arrivalRate: 10
+      rampTo: 30
+
+    # Sustained high query load
+    - name: "High Query Load"
+      duration: 600
+      arrivalRate: 50
+      maxVusers: 200
+
+    # Connection pool exhaustion test
+    - name: "Connection Pool Stress"
+      duration: 300
+      arrivalRate: 100
+      maxVusers: 500
+
+    # Recovery test
+    - name: "Recovery"
+      duration: 180
+      arrivalRate: 20
+
+  ensure:
+    p95: 3000
+    p99: 8000
+    maxErrorRate: 0.02  # Allow 2% errors for connection issues
+
+scenarios:
+  - name: "Heavy Read Operations"
+    weight: 50
+    flow:
+      # Authenticate
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Multiple concurrent reads (simulates dashboard loading)
+      - parallel:
+          - get:
+              url: "/api/creator/analytics"
+              headers:
+                Authorization: "Bearer {{ accessToken }}"
+
+          - get:
+              url: "/api/creator/stats"
+              headers:
+                Authorization: "Bearer {{ accessToken }}"
+
+          - get:
+              url: "/api/chat/history"
+              headers:
+                Authorization: "Bearer {{ accessToken }}"
+
+          - get:
+              url: "/api/calendar/events"
+              headers:
+                Authorization: "Bearer {{ accessToken }}"
+
+  - name: "Vector Search Load"
+    weight: 30
+    flow:
+      # Authenticate
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Rapid vector searches
+      - loop:
+          count: 5
+          flow:
+            - post:
+                url: "/api/chat"
+                headers:
+                  Authorization: "Bearer {{ accessToken }}"
+                  Content-Type: "application/json"
+                json:
+                  message: "{{ generateChatQuestion() }}"
+                expect:
+                  - statusCode: [200, 403, 429]  # Accept rate limit
+
+            - think: 1
+
+  - name: "Mixed Read/Write Operations"
+    weight: 20
+    flow:
+      # Authenticate
+      - post:
+          url: "/api/auth/session"
+          json:
+            test_user: true
+          capture:
+            - json: "$.session.access_token"
+              as: "accessToken"
+
+      # Simulate complex multi-table operations
+      - post:
+          url: "/api/assessments/quiz/generate"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            video_ids: ["{{ generateVideoId() }}", "{{ generateVideoId() }}"]
+            question_count: 10
+
+      - get:
+          url: "/api/creator/analytics"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+
+      - post:
+          url: "/api/calendar/events"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: "application/json"
+          json:
+            title: "Test Event"
+            event_type: "video"
+            scheduled_at: "{{ generateFutureDate() }}"
+
+      - get:
+          url: "/api/chronos/balance"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"

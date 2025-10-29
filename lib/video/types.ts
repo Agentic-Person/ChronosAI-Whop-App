@@ -355,11 +355,10 @@ export const VIDEO_PROCESSING_CONSTANTS = {
   ALLOWED_MIME_TYPES: [
     'video/mp4',
     'video/quicktime', // MOV
-    'video/x-msvideo', // AVI
-    'video/x-matroska', // MKV
+    'video/mpeg',      // MPEG
     'video/webm',
   ],
-  ALLOWED_EXTENSIONS: ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
+  ALLOWED_EXTENSIONS: ['.mp4', '.mov', '.mpeg', '.mpg', '.webm'],
 
   // Chunking defaults
   DEFAULT_CHUNK_SIZE: 750,
