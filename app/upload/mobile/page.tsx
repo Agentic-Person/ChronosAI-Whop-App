@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Upload, CheckCircle, AlertCircle, Loader } from 'lucide-react';
@@ -8,7 +8,7 @@ import { Upload, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 // Force dynamic rendering - this page uses useSearchParams() which requires request context
 export const dynamic = 'force-dynamic';
 
-export default function MobileUploadPage() {
+function MobileUploadContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -259,5 +259,20 @@ export default function MobileUploadPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MobileUploadPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4 bg-bg-app">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin mx-auto mb-4 text-accent-cyan" />
+          <p className="text-text-muted">Loading...</p>
+        </div>
+      </div>
+    }>
+      <MobileUploadContent />
+    </Suspense>
   );
 }
