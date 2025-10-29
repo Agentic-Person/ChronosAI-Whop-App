@@ -190,32 +190,6 @@ export async function POST(req: NextRequest) {
     }
 
     const creatorId = creator.id;
-    // PRODUCTION: Get creator ID from authenticated session
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Get creator record from whop_user_id
-    const { data: creator, error: creatorError } = await supabase
-      .from('creators')
-      .select('id')
-      .eq('whop_user_id', user.id)
-      .single();
-
-    if (creatorError || !creator) {
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Creator account not found' },
-        { status: 403 }
-      );
-    }
-
-    const creatorId = creator.id;
 
     // Store video in database - using ONLY columns from original schema
     // Use admin client to bypass RLS for backend video creation
