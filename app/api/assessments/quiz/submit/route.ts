@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { submitQuizAttempt } from '@/lib/assessments';
-import { getUser } from '@/lib/utils/supabase-client';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limiting/rate-limiter';
 import {
   ValidationError,
@@ -30,13 +29,14 @@ export async function POST(request: NextRequest) {
     logAPIRequest('POST', '/api/assessments/quiz/submit', {});
 
     // 2. Authenticate user
-    const user = await getUser();
-    if (!user) {
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
       throw new AuthenticationError('Not authenticated');
     }
 
     // 3. Get student ID
-    const supabase = createClient();
     const { data: student } = await supabase
       .from('students')
       .select('id')
