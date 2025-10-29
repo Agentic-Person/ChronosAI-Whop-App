@@ -14,7 +14,7 @@ import {
   errorToAPIResponse,
 } from '@/lib/infrastructure/errors';
 import { logAPIRequest, logInfo, logError } from '@/lib/infrastructure/monitoring/logger';
-import { supabase } from '@/lib/utils/supabase-client';
+import { createClient } from '@/lib/supabase/server';
 
 interface SubmitQuizRequest {
   quizId: string;
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Get student ID
+    const supabase = createClient();
     const { data: student } = await supabase
       .from('students')
       .select('id')
