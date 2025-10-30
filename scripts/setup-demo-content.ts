@@ -10,6 +10,10 @@
  */
 
 import 'openai/shims/node';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 const DEMO_VIDEOS = [
   // Course 1: Getting Started with Whop
@@ -94,7 +98,7 @@ async function importVideo(
   console.log(`   URL: ${video.url}`);
 
   try {
-    const response = await fetch('http://localhost:3000/api/video/youtube-import', {
+    const response = await fetch('http://localhost:3002/api/video/youtube-import', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -119,9 +123,10 @@ async function importVideo(
 
     const data = await response.json();
     console.log(`   ✅ Imported successfully!`);
-    console.log(`   Duration: ${Math.round(data.video.duration_seconds / 60)} minutes`);
+    console.log(`   ID: ${data.id}`);
+    console.log(`   Duration: ${data.duration}`);
 
-    return { success: true, video: data.video };
+    return { success: true, video: { id: data.id, title: data.title, duration_seconds: 0 } };
   } catch (error) {
     console.error(`   ❌ Failed:`, error);
     return { success: false, error: String(error) };
@@ -137,7 +142,7 @@ async function createCourse(
   console.log(`\n📚 Creating course: ${courseName}`);
 
   try {
-    const response = await fetch('http://localhost:3000/api/courses', {
+    const response = await fetch('http://localhost:3002/api/courses', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
