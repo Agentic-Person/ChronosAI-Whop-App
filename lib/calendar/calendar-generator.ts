@@ -8,6 +8,7 @@ import { getSupabaseAdmin } from '@/lib/infrastructure/database/connection-pool'
 import type { OnboardingData, AIScheduleItem, TimelineValidation } from '@/types/onboarding';
 import type { CalendarEvent, CreateCalendarEventInput } from '@/types/calendar';
 import { SESSION_LENGTH_MINUTES, TIME_SLOT_HOURS, DAY_OF_WEEK_NUMBERS } from './onboarding-questions';
+import { getClaudeModel } from '@/lib/config/ai-models';
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -217,7 +218,7 @@ Return ONLY the JSON array, no explanations.`;
     console.log('[CalendarGenerator] Calling Claude API for schedule generation...');
 
     const response = await claude.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: getClaudeModel(),
       max_tokens: 8192,
       temperature: 0.7,
       messages: [

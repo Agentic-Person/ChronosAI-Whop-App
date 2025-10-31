@@ -5,6 +5,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/lib/supabase/server';
+import { getClaudeModel } from '@/lib/config/ai-models';
 
 export interface KnowledgeGap {
   concept: string;
@@ -205,7 +206,7 @@ Return ONLY a JSON array of concept names (max 5), like:
 
     try {
       const response = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: getClaudeModel(),
         max_tokens: 512,
         messages: [{ role: 'user', content: prompt }],
       });
@@ -309,7 +310,7 @@ Return ONLY a JSON array of topic names (max 5), like:
 
     try {
       const response = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: getClaudeModel(),
         max_tokens: 512,
         messages: [{ role: 'user', content: prompt }],
       });

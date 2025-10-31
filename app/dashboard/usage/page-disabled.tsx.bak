@@ -1,0 +1,27 @@
+'use client';
+
+import React, { Suspense } from 'react';
+import { UsageDashboard } from '@/components/usage/UsageDashboard';
+import { RefreshCw } from 'lucide-react';
+
+/**
+ * Usage Dashboard Page
+ *
+ * Displays usage tracking and cost monitoring dashboard
+ */
+export default function UsagePage() {
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-8 h-8 animate-spin text-accent-cyan" />
+            <span className="ml-3 text-text-muted">Loading usage data...</span>
+          </div>
+        }
+      >
+        <UsageDashboard />
+      </Suspense>
+    </div>
+  );
+}

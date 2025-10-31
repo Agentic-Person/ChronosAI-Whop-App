@@ -12,6 +12,7 @@ import {
   StudentProfile,
   TimeSlot,
 } from './types';
+import { getClaudeModel } from '@/lib/config/ai-models';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -283,7 +284,7 @@ Return JSON ONLY:
 
     try {
       const response = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: getClaudeModel(),
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }],
       });

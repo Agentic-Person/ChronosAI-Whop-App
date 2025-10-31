@@ -14,6 +14,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '@/lib/utils/supabase-client';
 import { logger } from '@/lib/infrastructure/monitoring/logger';
 import { Quiz, QuizQuestion } from '@/types/database';
+import { getClaudeModel } from '@/lib/config/ai-models';
 
 // Initialize Claude client
 const anthropic = new Anthropic({
@@ -273,7 +274,7 @@ Return ONLY a JSON array of concept strings, e.g., ["React Hooks", "State Manage
 
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: getClaudeModel(),
       max_tokens: 500,
       messages: [{
         role: 'user',
@@ -319,7 +320,7 @@ async function generateQuestions(
 
   // Call Claude API
   const response = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: getClaudeModel(),
     max_tokens: 4000,
     messages: [{
       role: 'user',

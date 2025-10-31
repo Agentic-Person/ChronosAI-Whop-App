@@ -14,6 +14,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '@/lib/utils/supabase-client';
 import { logger } from '@/lib/infrastructure/monitoring/logger';
 import { ProjectTemplate, RubricItem } from './project-templates';
+import { getClaudeModel } from '@/lib/config/ai-models';
 
 // Initialize Claude client
 const anthropic = new Anthropic({
@@ -100,7 +101,7 @@ export async function reviewCode(
 
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: getClaudeModel(),
       max_tokens: 4000,
       messages: [{
         role: 'user',

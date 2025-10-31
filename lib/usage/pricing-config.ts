@@ -46,10 +46,17 @@ export const OPENAI_PRICING = {
 // ANTHROPIC PRICING
 // ============================================================================
 export const ANTHROPIC_PRICING = {
+  // Claude 3.5 Models (Latest)
   'claude-3-5-sonnet-20241022': {
     input: 0.003 / 1000,     // $3 per million tokens
     output: 0.015 / 1000,    // $15 per million tokens
   },
+  'claude-3-5-haiku-20241022': {
+    input: 0.00025 / 1000,   // $0.25 per million tokens
+    output: 0.00125 / 1000,  // $1.25 per million tokens
+  },
+
+  // Claude 3 Models (Previous Generation)
   'claude-3-opus-20240229': {
     input: 0.015 / 1000,     // $15 per million tokens
     output: 0.075 / 1000,    // $75 per million tokens

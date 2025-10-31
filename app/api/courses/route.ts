@@ -3,6 +3,13 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 // Helper function to get authenticated creator ID
 async function getAuthenticatedCreatorId(req: NextRequest): Promise<{ creatorId?: string; error?: NextResponse }> {
+  // DEV MODE: Bypass auth for development
+  if (process.env.NODE_ENV === 'development') {
+    const { searchParams } = new URL(req.url);
+    const devCreatorId = searchParams.get('creatorId') || '00000000-0000-0000-0000-000000000001';
+    return { creatorId: devCreatorId };
+  }
+
   const supabase = createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 

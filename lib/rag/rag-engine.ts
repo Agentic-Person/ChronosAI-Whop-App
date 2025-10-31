@@ -11,6 +11,7 @@ import { chatService } from './chat-service';
 import { VideoReference, ChatMessage } from '@/types/database';
 import { logAIAPICall, logError, logInfo } from '@/lib/infrastructure/monitoring/logger';
 import { AIAPIError } from '@/lib/infrastructure/errors';
+import { getClaudeModel } from '@/lib/config/ai-models';
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -18,7 +19,7 @@ const anthropic = new Anthropic({
 });
 
 // Constants
-const MODEL = 'claude-3-5-sonnet-20241022';
+const MODEL = getClaudeModel();
 const MAX_TOKENS = 4096;
 const TEMPERATURE = 0.7;
 const TOP_K_CHUNKS = 5;
@@ -34,6 +35,11 @@ export interface RAGResponse {
   video_references: VideoReference[];
   context: RAGContext;
   confidence: number;
+  usage?: {
+    input_tokens: number;
+    output_tokens: number;
+    model: string;
+  };
 }
 
 export interface RAGOptions {
@@ -244,6 +250,11 @@ export async function queryRAG(
           : 0,
       },
       confidence,
+      usage: {
+        input_tokens: response.usage?.input_tokens || 0,
+        output_tokens: response.usage?.output_tokens || 0,
+        model: MODEL,
+      },
     };
 
     return ragResponse;
@@ -381,6 +392,11 @@ export async function chatWithSession(
   answer: string;
   video_references: VideoReference[];
   confidence: number;
+  usage?: {
+    input_tokens: number;
+    output_tokens: number;
+    model: string;
+  };
 }> {
   try {
     logInfo('Starting chat interaction', { studentId, creatorId, sessionId });
@@ -424,6 +440,7 @@ export async function chatWithSession(
       answer: ragResponse.answer,
       video_references: ragResponse.video_references,
       confidence: ragResponse.confidence,
+      usage: ragResponse.usage,
     };
   } catch (error) {
     logError('Chat interaction failed', { error, studentId, creatorId, question });
