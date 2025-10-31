@@ -61,7 +61,6 @@ export class IntelligentChunker {
     const chunks: TextChunk[] = [];
     let currentWords: string[] = [];
     let currentSegments: TranscriptSegment[] = [];
-    let chunkStartTime = 0;
 
     for (const segment of transcript.segments) {
       const segmentWords = this.splitIntoWords(segment.text);
@@ -74,12 +73,11 @@ export class IntelligentChunker {
         const breakPoint = this.findNaturalBreak(currentWords);
 
         if (breakPoint > 0) {
-          // Create chunk
+          // Create chunk with current segments
           const chunk = this.createChunk(
             currentWords.slice(0, breakPoint),
             currentSegments,
-            chunks.length,
-            chunkStartTime
+            chunks.length
           );
           chunks.push(chunk);
 
@@ -87,13 +85,7 @@ export class IntelligentChunker {
           const overlapStart = Math.max(0, breakPoint - this.overlapWords);
           currentWords = currentWords.slice(overlapStart);
 
-          // Update chunk start time
-          chunkStartTime = chunk.endTimestamp - this.estimateOverlapDuration(
-            currentSegments,
-            this.overlapWords
-          );
-
-          // Remove segments that are fully processed
+          // Keep only segments needed for overlap
           currentSegments = this.trimProcessedSegments(currentSegments, overlapStart);
         }
       }
@@ -109,8 +101,7 @@ export class IntelligentChunker {
       const chunk = this.createChunk(
         finalWords,
         currentSegments,
-        chunks.length,
-        chunkStartTime
+        chunks.length
       );
       chunks.push(chunk);
     }
@@ -160,46 +151,30 @@ export class IntelligentChunker {
   private createChunk(
     words: string[],
     segments: TranscriptSegment[],
-    index: number,
-    chunkStartTime: number
+    index: number
   ): TextChunk {
     const text = words.join(' ');
     const wordCount = words.length;
 
-    // FIX: Use segment-based timestamps instead of manual tracking
+    // Use segment-based timestamps directly
     let startTimestamp: number;
     let endTimestamp: number;
 
     if (segments.length === 0) {
       // No segments available - use fallback
-      startTimestamp = chunkStartTime;
-      endTimestamp = chunkStartTime;
+      startTimestamp = 0;
+      endTimestamp = 0;
     } else {
-      // FIX: Use chunkStartTime instead of segments[0].start
-      // segments array contains ALL segments from video start, not just this chunk
-      startTimestamp = chunkStartTime;
+      // Use first and last segment timestamps directly
+      startTimestamp = segments[0].start;
       endTimestamp = segments[segments.length - 1].end;
 
       // Safety check: ensure end >= start
       if (endTimestamp < startTimestamp) {
-        console.warn(`⚠️ Timestamp inversion detected in chunk ${index}: start=${startTimestamp}, end=${endTimestamp}`);
-        endTimestamp = Math.max(endTimestamp, startTimestamp);
+        console.warn(`⚠️ Timestamp inversion in chunk ${index}: start=${startTimestamp}, end=${endTimestamp}`);
+        endTimestamp = startTimestamp;
       }
     }
-
-    // DIAGNOSTIC LOGGING
-    console.log(`\n=== CHUNK ${index} DEBUG ===`);
-    console.log(`chunkStartTime: ${chunkStartTime.toFixed(2)}s`);
-    console.log(`Segments count: ${segments.length}`);
-    if (segments.length > 0) {
-      console.log(`First segment: ${segments[0]?.start?.toFixed(2)}s - ${segments[0]?.end?.toFixed(2)}s`);
-      console.log(`Last segment: ${segments[segments.length - 1]?.start?.toFixed(2)}s - ${segments[segments.length - 1]?.end?.toFixed(2)}s`);
-    }
-    console.log(`Using segment-based timestamps:`);
-    console.log(`  startTimestamp: ${startTimestamp.toFixed(2)}s (from first segment)`);
-    console.log(`  endTimestamp: ${endTimestamp.toFixed(2)}s (from last segment)`);
-    console.log(`Word count: ${wordCount}`);
-    console.log(`Text preview: "${text.substring(0, 50)}..."`);
 
     return {
       text,

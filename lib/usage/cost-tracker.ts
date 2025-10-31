@@ -8,7 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { cache } from '@/lib/infrastructure/cache/redis-client';
 import { CacheTTL } from '@/lib/infrastructure/cache/cache-keys';
-import { logInfo, logError, logWarning } from '@/lib/infrastructure/monitoring/logger';
+import { logInfo, logError, logWarn } from '@/lib/infrastructure/monitoring/logger';
 import {
   OPENAI_PRICING,
   ANTHROPIC_PRICING,
@@ -342,7 +342,7 @@ export class CostTracker {
 
       return 0;
     } catch (error) {
-      logWarning('Failed to estimate cost', { provider, service, model, error });
+      logWarn('Failed to estimate cost', { provider, service, model, error });
       return 0;
     }
   }

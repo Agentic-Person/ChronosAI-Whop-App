@@ -18,6 +18,7 @@ import { QuickActionCard } from '@/components/creator/QuickActionCard';
 import { ProcessingQueue } from '@/components/creator/ProcessingQueue';
 import { RecentActivity } from '@/components/creator/RecentActivity';
 import { Card } from '@/components/ui/Card';
+import { UsageDashboard } from '@/components/usage/UsageDashboard';
 import { getCreatorStats, getProcessingVideos, getRecentActivity } from '@/lib/creator/analytics';
 import { retryProcessing } from '@/lib/creator/videoManager';
 // MCP imports disabled for MVP OAuth deployment - Whop features will be re-enabled after MCP setup
@@ -344,6 +345,15 @@ export default function CreatorDashboardPage() {
           </Card>
         </motion.div>
       )}
+
+      {/* Usage Tracking & Cost Monitoring */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.5 }}
+      >
+        <UsageDashboard creatorId={creatorId} />
+      </motion.div>
     </div>
   );
 }
