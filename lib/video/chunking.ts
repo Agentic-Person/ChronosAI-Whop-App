@@ -175,8 +175,9 @@ export class IntelligentChunker {
       startTimestamp = chunkStartTime;
       endTimestamp = chunkStartTime;
     } else {
-      // Use actual segment timestamps
-      startTimestamp = segments[0].start;
+      // FIX: Use chunkStartTime instead of segments[0].start
+      // segments array contains ALL segments from video start, not just this chunk
+      startTimestamp = chunkStartTime;
       endTimestamp = segments[segments.length - 1].end;
 
       // Safety check: ensure end >= start
@@ -188,7 +189,7 @@ export class IntelligentChunker {
 
     // DIAGNOSTIC LOGGING
     console.log(`\n=== CHUNK ${index} DEBUG ===`);
-    console.log(`Manual chunkStartTime (ignored): ${chunkStartTime.toFixed(2)}s`);
+    console.log(`chunkStartTime: ${chunkStartTime.toFixed(2)}s`);
     console.log(`Segments count: ${segments.length}`);
     if (segments.length > 0) {
       console.log(`First segment: ${segments[0]?.start?.toFixed(2)}s - ${segments[0]?.end?.toFixed(2)}s`);
@@ -316,8 +317,29 @@ export function validateChunks(chunks: TextChunk[]): { valid: boolean; errors: s
   const errors: string[] = [];
 
   chunks.forEach((chunk, index) => {
-    if (!validateChunk(chunk)) {
-      errors.push(`Chunk ${index} failed validation`);
+    const isLastChunk = index === chunks.length - 1;
+
+    // For last chunk, allow smaller word count but still validate other fields
+    if (isLastChunk) {
+      // Check text is not empty
+      if (!chunk.text || chunk.text.trim().length === 0) {
+        errors.push(`Chunk ${index} has no text`);
+      }
+
+      // Check timestamps are valid
+      if (chunk.startTimestamp < 0 || chunk.endTimestamp < chunk.startTimestamp) {
+        errors.push(`Chunk ${index} has invalid timestamps`);
+      }
+
+      // For last chunk, only check it doesn't exceed MAX size
+      if (chunk.wordCount > VIDEO_PROCESSING_CONSTANTS.MAX_CHUNK_SIZE) {
+        errors.push(`Chunk ${index} exceeds maximum size`);
+      }
+    } else {
+      // For all other chunks, use full validation
+      if (!validateChunk(chunk)) {
+        errors.push(`Chunk ${index} failed validation`);
+      }
     }
 
     // Check for timestamp overlap issues
@@ -357,10 +379,10 @@ export async function storeChunks(
     });
   }
 
-  // Convert to database format - INCLUDING creator_id for multi-tenant isolation
+  // Convert to database format
   const records = chunks.map((chunk) => ({
     video_id: videoId,
-    creator_id: creatorId, // CRITICAL: Add creator_id for multi-tenant isolation
+    // Note: creator_id not needed here, it's available via videos table FK
     chunk_text: chunk.text,
     chunk_index: chunk.index,
     start_timestamp: Math.floor(chunk.startTimestamp),
@@ -376,6 +398,8 @@ export async function storeChunks(
   const { data, error } = await supabase.from('video_chunks').insert(records).select();
 
   if (error) {
+    console.error('❌ DATABASE ERROR storing chunks:', error);
+    console.error('Records being inserted:', JSON.stringify(records, null, 2));
     logError('Failed to store chunks', error, { videoId, chunkCount: chunks.length });
     throw new ChunkingError('Failed to save chunks', videoId);
   }
