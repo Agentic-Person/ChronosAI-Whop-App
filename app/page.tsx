@@ -57,7 +57,7 @@ export default function LandingPage() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <a href="/api/whop/auth/login">
                 <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
                   Sign In with Whop
@@ -70,99 +70,98 @@ export default function LandingPage() {
                 </button>
               </Link>
             </div>
-          </motion.div>
 
-          {/* Benefits Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {benefits.map((benefit, index) => {
-              const Icon = benefit.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="group relative bg-gradient-to-br from-bg-card/80 to-bg-app/80 backdrop-blur-sm rounded-xl p-6 border border-border-primary hover:border-accent-orange/50 transition-all duration-300 hover:shadow-lg hover:shadow-accent-orange/10"
-                >
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-orange/20 to-accent-purple/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Icon className="w-6 h-6 text-accent-orange" />
+            {/* Video + AI Chat Side by Side */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12"
+            >
+              {/* Video Placeholder - 2/3 width */}
+              <div className="lg:col-span-2">
+                <Card padding="lg" className="overflow-hidden h-full">
+                  <div className="aspect-video bg-gradient-to-br from-bg-sidebar to-bg-app rounded-xl border-2 border-accent-orange/30 flex items-center justify-center relative overflow-hidden">
+                    {/* Video Placeholder Content */}
+                    <div className="text-center z-10">
+                      <div className="w-24 h-24 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-accent-orange/40 animate-pulse">
+                        <Play className="w-12 h-12 text-accent-orange" />
                       </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-text-primary mb-2 group-hover:text-accent-orange transition-colors">
-                        {benefit.title}
-                      </h3>
-                      <p className="text-sm text-text-secondary leading-relaxed">
-                        {benefit.description}
+                      <h3 className="text-2xl font-bold text-text-primary mb-2">Course Video</h3>
+                      <p className="text-base text-text-secondary">
+                        Watch your course videos here
                       </p>
                     </div>
+                    
+                    {/* Animated background */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-accent-orange/20 via-transparent to-accent-purple/20 animate-pulse"></div>
+                    </div>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                </Card>
+              </div>
+
+              {/* AI Chat Preview - 1/3 width */}
+              <div className="lg:col-span-1">
+                <Card padding="lg" className="overflow-hidden h-full">
+                  <div className="mb-3">
+                    <h3 className="text-lg font-bold text-text-primary mb-1">
+                      Ask ChronosAI
+                    </h3>
+                    <p className="text-sm text-text-secondary">
+                      Get instant answers with timestamps
+                    </p>
+                  </div>
+                  <StaticChatPreview className="w-full min-h-[400px] lg:min-h-[500px]" />
+                </Card>
+              </div>
+            </motion.div>
+
+            {/* Benefits Grid - Below Video/AI Chat */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              {benefits.map((benefit, index) => {
+                const Icon = benefit.icon;
+                return (
+                  <div
+                    key={index}
+                    className="group relative bg-gradient-to-br from-bg-card/80 to-bg-app/80 backdrop-blur-sm rounded-xl p-6 border border-border-primary hover:border-accent-orange/50 transition-all duration-300 hover:shadow-lg hover:shadow-accent-orange/10"
+                  >
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-orange/20 to-accent-purple/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Icon className="w-6 h-6 text-accent-orange" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-text-primary mb-2 group-hover:text-accent-orange transition-colors">
+                          {benefit.title}
+                        </h3>
+                        <p className="text-sm text-text-secondary leading-relaxed">
+                          {benefit.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div id="demo" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Video Section - Full Width */}
+      {/* Final CTA Section */}
+      <div id="demo" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="mb-8"
-        >
-          <Card padding="lg" className="overflow-hidden">
-            <div className="aspect-video bg-gradient-to-br from-bg-sidebar to-bg-app rounded-xl border-2 border-accent-orange/30 flex items-center justify-center relative overflow-hidden">
-              {/* Video Placeholder Content */}
-              <div className="text-center z-10">
-                <div className="w-24 h-24 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-accent-orange/40 animate-pulse">
-                  <Play className="w-12 h-12 text-accent-orange" />
-                </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-2">Course Video</h3>
-                <p className="text-base text-text-secondary">
-                  Watch your course videos here
-                </p>
-              </div>
-              
-              {/* Animated background */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-accent-orange/20 via-transparent to-accent-purple/20 animate-pulse"></div>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* AI Chat Demo - Full Width Underneath */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="mb-8"
-        >
-          <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold text-text-primary mb-2">
-              See ChronosAI in Action
-            </h2>
-            <p className="text-text-secondary">
-              Watch how students get instant answers with timestamp citations
-            </p>
-          </div>
-          <StaticChatPreview className="w-full min-h-[600px]" />
-        </motion.div>
-
-        {/* Final CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
+          className="text-center"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Ready to Transform Your Content?
