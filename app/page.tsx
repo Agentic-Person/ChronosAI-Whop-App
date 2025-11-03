@@ -3,43 +3,45 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Database, MessageSquare, BarChart, ArrowRight, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { ArrowRight, Play, Clock, Zap, TrendingUp, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { VideoCarousel } from '@/components/chat/VideoCarousel';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
 
 export default function LandingPage() {
-  // Core features - only 3 essential features
-  const features = [
+  const benefits = [
     {
-      icon: Database,
-      title: 'Video Processing & Storage',
-      description: 'Automatic video upload, transcription, and embedding with Supabase. Your content is securely stored and instantly searchable with vector embeddings.',
+      icon: Clock,
+      title: 'Chronos Gave Mortals Control Over Destiny. ChronosAI Gives You Control Over Your Time.',
+      description: 'No more endless days of student support; your course runs on intelligence, not your exhaustion',
     },
     {
-      icon: MessageSquare,
-      title: 'AI Chat with RAG',
-      description: 'Intelligent chat that searches across all your videos using vector embeddings. Get instant answers with precise timestamp citations.',
+      icon: Zap,
+      title: 'Transcribe, Index, Teach, Assess—All Automatically',
+      description: 'One upload, infinite efficiency. Your entire course transforms from a time sink into a time machine that propels students forward',
     },
     {
-      icon: BarChart,
-      title: 'Creator Dashboard',
-      description: 'Comprehensive analytics, student engagement metrics, and video management. Track completion rates, popular content, and student performance.',
+      icon: TrendingUp,
+      title: 'Your Students Get AI-Powered Mentorship. You Get Your Life Back.',
+      description: 'Personalized learning calendars, instant Q&A with timestamps, adaptive quizzes—while you focus on what matters',
+    },
+    {
+      icon: Crown,
+      title: 'The Creator\'s Secret Weapon',
+      description: 'Creators using ChronosAI handle 10x the student load with 1/10th the stress, completing more courses and serving more people without burning out',
     },
   ];
 
   return (
     <div className="min-h-screen bg-bg-app">
-      {/* Hero Section - ChatGPT Style Clean & Centered */}
-      <section className="relative overflow-hidden py-12 md:py-16">
-        {/* Subtle background effects */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-accent-orange/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-orange/5 rounded-full blur-3xl" />
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-bg-sidebar via-bg-app to-bg-sidebar border-b border-border-primary">
+        {/* Background Effects */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent-orange/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           {/* Title and Slogan */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -47,144 +49,145 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            {/* Simple Tagline */}
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <Sparkles className="w-5 h-5 text-accent-orange" />
-              <span className="text-sm font-medium text-text-secondary">Intelligent Video Learning</span>
-            </div>
-
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 text-gradient px-4 py-2">
-              Rapid Video Digestion Enabler
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-gradient">
+              ChronosAI
             </h1>
-
-            <p className="text-xl md:text-2xl text-text-secondary mb-8 max-w-3xl mx-auto">
-              Because time shouldn't stand between you and understanding
+            <p className="text-xl md:text-2xl text-text-secondary font-medium mb-8">
+              Master Time. Master Your Business.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="/api/whop/auth/login">
-                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white">
+                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
                   Sign In with Whop
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </a>
-              <Link href="#features">
-                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white">
+              <Link href="#demo">
+                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
                   Learn More
                 </button>
               </Link>
             </div>
           </motion.div>
 
-          {/* Video Carousel - No Background */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mb-8"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-4 h-4 text-accent-orange" />
-              <h3 className="text-sm font-semibold text-text-primary">Your Course Library</h3>
-            </div>
-            <VideoCarousel />
-          </motion.div>
-
-          {/* Static Chat Preview */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="max-w-4xl mx-auto"
-          >
-            <StaticChatPreview className="h-[500px]" />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Learn More / Features Section */}
-      <section id="features" className="py-24 px-6 bg-bg-sidebar">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Core Platform Features
-            </h2>
-            <p className="text-xl text-text-secondary">
-              Everything you need to transform video courses into interactive learning
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card hover padding="lg" className="h-full border border-border-default">
-                  <div className="w-14 h-14 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 shadow-md">
-                    <feature.icon className="w-7 h-7 text-white" />
+          {/* Benefits Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {benefits.map((benefit, index) => {
+              const Icon = benefit.icon;
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="group relative bg-gradient-to-br from-bg-card/80 to-bg-app/80 backdrop-blur-sm rounded-xl p-6 border border-border-primary hover:border-accent-orange/50 transition-all duration-300 hover:shadow-lg hover:shadow-accent-orange/10"
+                >
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-orange/20 to-accent-purple/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Icon className="w-6 h-6 text-accent-orange" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-text-primary mb-2 group-hover:text-accent-orange transition-colors">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-sm text-text-secondary leading-relaxed">
+                        {benefit.description}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                  <p className="text-text-secondary leading-relaxed">{feature.description}</p>
-                </Card>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
+        </div>
+      </div>
 
-          {/* Additional Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="mt-16 text-center"
-          >
-            <div className="max-w-3xl mx-auto bg-bg-card border border-border-default rounded-lg p-8">
-              <h3 className="text-2xl font-bold mb-4">Built for Whop Creators</h3>
-              <p className="text-text-secondary mb-6">
-                Seamlessly integrate with your Whop community. Automatic member sync,
-                secure OAuth authentication, and webhook support for real-time updates.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-text-muted">
-                <span>✓ Secure OAuth Flow</span>
-                <span>✓ Automatic Member Sync</span>
-                <span>✓ Real-time Webhooks</span>
-                <span>✓ Vector Search</span>
+      {/* Main Content */}
+      <div id="demo" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Video Section - Full Width */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-8"
+        >
+          <Card padding="lg" className="overflow-hidden">
+            <div className="aspect-video bg-gradient-to-br from-bg-sidebar to-bg-app rounded-xl border-2 border-accent-orange/30 flex items-center justify-center relative overflow-hidden">
+              {/* Video Placeholder Content */}
+              <div className="text-center z-10">
+                <div className="w-24 h-24 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-accent-orange/40 animate-pulse">
+                  <Play className="w-12 h-12 text-accent-orange" />
+                </div>
+                <h3 className="text-2xl font-bold text-text-primary mb-2">Course Video</h3>
+                <p className="text-base text-text-secondary">
+                  Watch your course videos here
+                </p>
+              </div>
+              
+              {/* Animated background */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-accent-orange/20 via-transparent to-accent-purple/20 animate-pulse"></div>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </Card>
+        </motion.div>
 
-      {/* CTA Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Transform Your Content?
+        {/* AI Chat Demo - Full Width Underneath */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="mb-8"
+        >
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold text-text-primary mb-2">
+              See ChronosAI in Action
             </h2>
-            <p className="text-xl text-text-secondary mb-8">
-              Join Whop creators who are turning passive videos into interactive learning experiences.
+            <p className="text-text-secondary">
+              Watch how students get instant answers with timestamp citations
             </p>
+          </div>
+          <StaticChatPreview className="w-full min-h-[600px]" />
+        </motion.div>
+
+        {/* Final CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mt-16"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Ready to Transform Your Content?
+          </h2>
+          <p className="text-xl text-text-secondary mb-8">
+            Join creators who are turning passive videos into interactive learning experiences.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/api/whop/auth/login">
-              <Button size="lg" icon={ArrowRight}>
+              <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg transform hover:scale-105">
                 Sign In with Whop
-              </Button>
+                <ArrowRight className="w-5 h-5" />
+              </button>
             </a>
-            <p className="text-sm text-text-muted mt-6">
-              No credit card required • Instant setup • Secure authentication
-            </p>
-          </motion.div>
-        </div>
-      </section>
+            <Link href="#demo">
+              <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg transform hover:scale-105">
+                Learn More
+              </button>
+            </Link>
+          </div>
+          <p className="text-sm text-text-muted mt-6">
+            No credit card required • Instant setup • Secure authentication
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }

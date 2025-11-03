@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { TopNavigation } from "@/components/layout/TopNavigation";
+import { ConditionalNavigation } from "@/components/layout/ConditionalNavigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,8 +24,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* Global Navigation - appears on all pages */}
-        <TopNavigation user={user} />
+        {/* Global Navigation - appears on all pages except landing */}
+        <ConditionalNavigation user={user} />
 
         {children}
         <Toaster position="top-right" />
