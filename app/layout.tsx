@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import { TopNavigation } from "@/components/layout/TopNavigation";
 import { ConditionalNavigation } from "@/components/layout/ConditionalNavigation";
 
 const inter = Inter({ subsets: ["latin"] });
