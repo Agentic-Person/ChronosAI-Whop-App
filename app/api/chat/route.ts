@@ -19,6 +19,7 @@ import { logAPIRequest, logInfo, logError } from '@/lib/infrastructure/monitorin
 import { measureAsync } from '@/lib/infrastructure/monitoring/performance';
 import { awardChatMessage, getBalance } from '@/lib/chronos/rewardEngine';
 import { checkChatLimit, incrementChatUsage, initializeUsage, formatUsageMessage } from '@/lib/features/chat-limits';
+import { costTracker, calculateAnthropicCost } from '@/lib/usage';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -105,7 +106,65 @@ export async function POST(request: NextRequest) {
       creatorId = activeEnrollment.creator_id;
     }
 
-    // 6. Process chat with performance measurement
+    // 6. Check cost budget before making API call
+    const estimatedCost = 0.01; // Estimated cost for a typical chat message
+    const costCheck = await costTracker.checkCostLimit(studentId, creatorId, estimatedCost);
+
+    if (!costCheck.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'BUDGET_LIMIT_EXCEEDED',
+          message: costCheck.reason || 'Daily API cost budget exceeded. Please try again tomorrow or upgrade your plan.',
+          details: {
+            daily_spent: costCheck.daily_spent,
+            daily_limit: costCheck.daily_limit,
+          },
+        },
+      }, { status: 429 });
+    }
+
+    // 7. DEBUG: Check database state before RAG query
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = createClient();
+
+    // Check if videos exist for this creator
+    const { data: videos, error: videosError } = await supabase
+      .from('videos')
+      .select('id, title, transcript_processed')
+      .eq('creator_id', creatorId)
+      .limit(5);
+
+    // Check if chunks exist
+    let chunksDebug = null;
+    if (videos && videos.length > 0) {
+      const { data: chunks, error: chunksError } = await supabase
+        .from('video_chunks')
+        .select('id, video_id, embedding')
+        .in('video_id', videos.map(v => v.id))
+        .limit(10);
+
+      chunksDebug = {
+        totalChunks: chunks?.length || 0,
+        chunksWithEmbeddings: chunks?.filter(c => c.embedding !== null).length || 0,
+        chunksWithoutEmbeddings: chunks?.filter(c => c.embedding === null).length || 0,
+      };
+    }
+
+    console.log('🔍 RAG Database Debug:', {
+      creatorId,
+      studentId,
+      question: message.substring(0, 100),
+      videos: {
+        totalVideos: videos?.length || 0,
+        videosWithTranscripts: videos?.filter(v => v.transcript_processed).length || 0,
+        sampleTitles: videos?.map(v => v.title).slice(0, 3) || [],
+        error: videosError?.message,
+      },
+      chunks: chunksDebug,
+    });
+
+    // 8. Process chat with performance measurement
     const response = await measureAsync(
       'chat_processing',
       async () => await chatWithSession(
@@ -117,7 +176,50 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    // 7. Increment chat usage for tier limits
+    // 8. Track API cost usage
+    let apiCost = 0;
+    if (response.usage) {
+      try {
+        // Calculate actual cost from token usage
+        apiCost = calculateAnthropicCost(
+          response.usage.model as any,
+          response.usage.input_tokens,
+          response.usage.output_tokens
+        );
+
+        // Track usage in database
+        await costTracker.trackUsage({
+          user_id: studentId,
+          creator_id: creatorId,
+          endpoint: '/api/chat',
+          method: 'POST',
+          provider: 'anthropic',
+          service: 'chat',
+          cost_usd: apiCost,
+          metadata: {
+            model: response.usage.model,
+            input_tokens: response.usage.input_tokens,
+            output_tokens: response.usage.output_tokens,
+            session_id: response.session_id,
+            message_id: response.message_id,
+          },
+          status_code: 200,
+        });
+
+        logInfo('API cost tracked', {
+          userId: studentId,
+          creatorId,
+          cost: apiCost,
+          inputTokens: response.usage.input_tokens,
+          outputTokens: response.usage.output_tokens,
+        });
+      } catch (error) {
+        // Non-critical error - log but don't fail the request
+        logError('Failed to track API cost', { error, userId: studentId });
+      }
+    }
+
+    // 9. Increment chat usage for tier limits
     let usageInfo;
     try {
       usageInfo = await incrementChatUsage(user.id);
@@ -132,7 +234,7 @@ export async function POST(request: NextRequest) {
       logError('Failed to increment chat usage', { error, userId: user.id });
     }
 
-    // 8. Award CHRONOS tokens for asking a question
+    // 10. Award CHRONOS tokens for asking a question
     let chronosBalance: number | undefined;
     try {
       const rewardResult = await awardChatMessage(
@@ -146,18 +248,19 @@ export async function POST(request: NextRequest) {
       logError('Failed to award chat tokens', { error, userId: user.id });
     }
 
-    // 9. Log success
+    // 11. Log success
     const duration = Date.now() - startTime;
     logInfo('Chat request completed', {
       userId: user.id,
       sessionId: response.session_id,
       duration,
       confidence: response.confidence,
+      apiCost,
       chronosAwarded: chronosBalance !== undefined,
       usageTracked: usageInfo !== undefined,
     });
 
-    // 10. Return response with usage and reward info
+    // 12. Return response with usage and reward info
     const chatResponse: ChatResponse = {
       message_id: response.message_id,
       content: response.answer,

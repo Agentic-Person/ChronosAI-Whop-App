@@ -94,12 +94,30 @@ export async function vectorSearch(
 
     const { data, error } = await rpcQuery;
 
+    // DEBUG: Log vector search results
+    console.log('🔍 Vector Search Debug:', {
+      query: query.substring(0, 100),
+      creator_id,
+      match_threshold: similarity_threshold,
+      match_count,
+      video_ids_filter: video_ids?.length || 'none',
+      resultsCount: data?.length || 0,
+      topResults: data?.slice(0, 3).map((r: any) => ({
+        video_title: r.video_title,
+        similarity: r.similarity,
+        chunk_preview: r.chunk_text?.substring(0, 100),
+        timestamp: `${r.start_timestamp || 0}s`,
+      })) || [],
+      error: error?.message,
+    });
+
     if (error) {
       console.error('Vector search error:', error);
       throw new Error(`Vector search failed: ${error.message}`);
     }
 
     if (!data || data.length === 0) {
+      console.warn('⚠️  Vector search returned 0 results - check if chunks exist for creator:', creator_id);
       return [];
     }
 

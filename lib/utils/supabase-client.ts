@@ -73,12 +73,30 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
 
 /**
  * Get user from Supabase auth
+ * In development mode, returns a dev user if no user is authenticated
  */
 export async function getUser() {
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
+
+  // In development, return a dev user if no user is authenticated
+  if (!user && process.env.NODE_ENV === 'development') {
+    console.log('🔧 DEV MODE: Using dev user (00000000-0000-0000-0000-000000000001)');
+    return {
+      id: '00000000-0000-0000-0000-000000000001',
+      email: 'dev@chronos-ai.app',
+      aud: 'authenticated',
+      role: 'authenticated',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      app_metadata: {},
+      user_metadata: {
+        name: 'Dev User',
+      },
+    } as any;
+  }
 
   if (error) throw error;
   return user;

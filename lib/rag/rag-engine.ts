@@ -207,6 +207,21 @@ export async function queryRAG(
       },
     ];
 
+    // DEBUG: Log RAG context being sent to Claude
+    console.log('🔍 RAG Context Debug:', {
+      model: MODEL,
+      chunksFound: searchResults.length,
+      contextLength: context.length,
+      estimatedTokens: contextBuilder.estimateTokenCount(context),
+      searchResults: searchResults.map(r => ({
+        video: r.video_title,
+        similarity: r.similarity.toFixed(3),
+        timestamp: `${r.start_timestamp || 0}s`,
+      })),
+      contextPreview: context.substring(0, 500) + '...',
+      question: question.substring(0, 100),
+    });
+
     logInfo('Calling Claude API', {
       model: MODEL,
       chunksFound: searchResults.length,

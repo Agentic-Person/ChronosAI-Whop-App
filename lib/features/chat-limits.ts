@@ -87,6 +87,22 @@ export class ChatLimitsService {
    * Check if user can send a chat message
    */
   static async checkChatLimit(userId: string): Promise<ChatLimitCheckResult> {
+    // DEV MODE: Bypass chat limits in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 DEV MODE: Bypassing chat limits');
+      return {
+        allowed: true,
+        usage: {
+          tier: 'FREE',
+          questions_asked: 0,
+          remaining: 999,
+          is_free_tier: true,
+          upgrade_required: false,
+        },
+        message: 'Development mode - unlimited questions',
+      };
+    }
+
     const supabase = createClient();
 
     // Call database function
@@ -165,6 +181,17 @@ export class ChatLimitsService {
    * Increment chat usage after successful message
    */
   static async incrementChatUsage(userId: string): Promise<ChatUsageInfo> {
+    // DEV MODE: Bypass in development
+    if (process.env.NODE_ENV === 'development') {
+      return {
+        tier: 'FREE',
+        questions_asked: 0,
+        remaining: 999,
+        is_free_tier: true,
+        upgrade_required: false,
+      };
+    }
+
     const supabase = createClient();
 
     // Call database function

@@ -7,23 +7,24 @@ import pino from 'pino';
 
 /**
  * Create logger instance with environment-based configuration
+ * TEMP FIX: Disabled pino-pretty in development due to worker thread crashes
  */
 export const logger = pino({
   level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
   formatters: {
     level: (label) => ({ level: label }),
   },
-  // Pretty print in development
-  ...(process.env.NODE_ENV !== 'production' && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname',
-      },
-    },
-  }),
+  // Simple console logging in development (pino-pretty worker thread crashes)
+  // ...(process.env.NODE_ENV !== 'production' && {
+  //   transport: {
+  //     target: 'pino-pretty',
+  //     options: {
+  //       colorize: true,
+  //       translateTime: 'SYS:standard',
+  //       ignore: 'pid,hostname',
+  //     },
+  //   },
+  // }),
   // Production configuration
   ...(process.env.NODE_ENV === 'production' && {
     base: {
