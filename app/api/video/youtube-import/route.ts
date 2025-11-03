@@ -1,5 +1,5 @@
-// IMPORTANT: OpenAI SDK requires Node.js shims to be imported first in server-side code
 import 'openai/shims/node';
+// IMPORTANT: OpenAI SDK requires Node.js shims to be imported first in server-side code
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';

@@ -3,6 +3,8 @@
  * Handles embedding generation and vector similarity search for RAG
  */
 
+// CRITICAL: OpenAI shims must be imported before any OpenAI imports
+import 'openai/shims/node';
 import { OpenAI } from 'openai';
 import { supabase } from '@/lib/utils/supabase-client';
 import { VideoChunk } from '@/types/database';

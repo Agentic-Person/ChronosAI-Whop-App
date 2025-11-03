@@ -9,6 +9,8 @@
  * - Database storage
  */
 
+// CRITICAL: OpenAI shims must be imported before any OpenAI imports
+import 'openai/shims/node';
 import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
@@ -25,6 +27,7 @@ import {
   TranscriptionError,
   VIDEO_PROCESSING_CONSTANTS,
 } from './types';
+import { costTracker, calculateTranscriptionCost as calculateTranscriptionCostFromUsage } from '@/lib/usage';
 
 // ============================================================================
 // OPENAI CLIENT
@@ -418,27 +421,33 @@ export function calculateTranscriptionCost(durationSeconds: number): number {
 }
 
 /**
- * Track transcription cost in database
+ * Track transcription cost in database using new costTracker service
  */
 export async function trackTranscriptionCost(
   videoId: string,
-  durationSeconds: number
+  durationSeconds: number,
+  userId?: string,
+  creatorId?: string
 ): Promise<void> {
-  const supabase = getSupabaseAdmin();
   const cost = calculateTranscriptionCost(durationSeconds);
 
-  await supabase.from('video_processing_costs').insert({
-    video_id: videoId,
-    operation_type: 'transcription',
+  await costTracker.trackUsage({
+    user_id: userId,
+    creator_id: creatorId,
+    endpoint: '/api/video/process',
+    method: 'POST',
     provider: 'openai',
+    service: 'transcription',
     cost_usd: cost,
     metadata: {
+      video_id: videoId,
       duration_seconds: durationSeconds,
       model: 'whisper-1',
     },
+    status_code: 200,
   });
 
-  logInfo('Transcription cost tracked', { videoId, cost, durationSeconds });
+  logInfo('Transcription cost tracked', { videoId, cost, durationSeconds, userId, creatorId });
 }
 
 /**

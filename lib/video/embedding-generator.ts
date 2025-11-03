@@ -9,6 +9,7 @@
  * - Database storage
  */
 
+// CRITICAL: OpenAI shims must be imported before any OpenAI imports
 import 'openai/shims/node';
 import OpenAI from 'openai';
 import { getSupabaseAdmin } from '@/lib/infrastructure/database/connection-pool';
@@ -28,6 +29,7 @@ import {
   VIDEO_PROCESSING_CONSTANTS,
 } from './types';
 import crypto from 'crypto';
+import { costTracker, calculateEmbeddingCost as calculateEmbeddingCostFromUsage } from '@/lib/usage';
 
 // ============================================================================
 // OPENAI CLIENT
@@ -336,28 +338,33 @@ export async function storeEmbeddings(
 }
 
 /**
- * Track embedding cost in database
+ * Track embedding cost in database using new costTracker service
  */
 export async function trackEmbeddingCost(
   videoId: string,
   tokenCount: number,
-  cost: number
+  cost: number,
+  userId?: string,
+  creatorId?: string
 ): Promise<void> {
-  const supabase = getSupabaseAdmin();
-
-  await supabase.from('video_processing_costs').insert({
-    video_id: videoId,
-    operation_type: 'embedding',
+  await costTracker.trackUsage({
+    user_id: userId,
+    creator_id: creatorId,
+    endpoint: '/api/video/process',
+    method: 'POST',
     provider: 'openai',
+    service: 'embeddings',
     cost_usd: cost,
-    tokens_used: tokenCount,
     metadata: {
+      video_id: videoId,
+      tokens_used: tokenCount,
       model: 'text-embedding-ada-002',
       dimensions: VIDEO_PROCESSING_CONSTANTS.EMBEDDING_DIMENSIONS,
     },
+    status_code: 200,
   });
 
-  logInfo('Embedding cost tracked', { videoId, cost, tokenCount });
+  logInfo('Embedding cost tracked', { videoId, cost, tokenCount, userId, creatorId });
 }
 
 /**
