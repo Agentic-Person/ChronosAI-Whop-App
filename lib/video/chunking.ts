@@ -171,7 +171,12 @@ export class IntelligentChunker {
 
       // Safety check: ensure end >= start
       if (endTimestamp < startTimestamp) {
-        console.warn(`⚠️ Timestamp inversion in chunk ${index}: start=${startTimestamp}, end=${endTimestamp}`);
+        logError('Timestamp inversion detected', undefined, {
+          chunkIndex: index,
+          startTimestamp,
+          endTimestamp,
+          segmentCount: segments.length,
+        });
         endTimestamp = startTimestamp;
       }
     }
@@ -373,9 +378,11 @@ export async function storeChunks(
   const { data, error } = await supabase.from('video_chunks').insert(records).select();
 
   if (error) {
-    console.error('❌ DATABASE ERROR storing chunks:', error);
-    console.error('Records being inserted:', JSON.stringify(records, null, 2));
-    logError('Failed to store chunks', error, { videoId, chunkCount: chunks.length });
+    logError('Failed to store chunks', error, {
+      videoId,
+      chunkCount: chunks.length,
+      records: records.slice(0, 2), // Log first 2 records for debugging
+    });
     throw new ChunkingError('Failed to save chunks', videoId);
   }
 

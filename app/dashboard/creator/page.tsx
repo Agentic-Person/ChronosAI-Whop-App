@@ -63,15 +63,35 @@ export default function CreatorDashboardPage() {
     trialing: 0,
   });
   const [loading, setLoading] = useState(true);
-
-  // Mock creator ID - in production, get from auth
-  const creatorId = 'mock-creator-id';
+  const [creatorId, setCreatorId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadDashboardData();
+    loadCreatorId();
   }, []);
 
+  useEffect(() => {
+    if (creatorId) {
+      loadDashboardData();
+    }
+  }, [creatorId]);
+
+  const loadCreatorId = async () => {
+    try {
+      const response = await fetch('/api/creator/me');
+      if (!response.ok) {
+        throw new Error('Failed to fetch creator ID');
+      }
+      const data = await response.json();
+      setCreatorId(data.creatorId);
+    } catch (error) {
+      console.error('Failed to load creator ID:', error);
+      toast.error('Failed to authenticate. Please log in again.');
+    }
+  };
+
   const loadDashboardData = async () => {
+    if (!creatorId) return;
+
     try {
       setLoading(true);
 
@@ -347,13 +367,15 @@ export default function CreatorDashboardPage() {
       )}
 
       {/* Usage Tracking & Cost Monitoring */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.5 }}
-      >
-        <UsageDashboard creatorId={creatorId} />
-      </motion.div>
+      {creatorId && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
+        >
+          <UsageDashboard creatorId={creatorId} />
+        </motion.div>
+      )}
     </div>
   );
 }
