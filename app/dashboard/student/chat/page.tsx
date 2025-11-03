@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import { Play, Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -28,7 +28,7 @@ interface Course {
   description?: string;
 }
 
-export default function StudentChatPage() {
+function StudentChatPageContent() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get('course');
 
@@ -325,5 +325,20 @@ export default function StudentChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense to handle useSearchParams
+export default function StudentChatPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-bg-app">
+        <div className="text-center">
+          <div className="text-lg text-text-primary">Loading...</div>
+        </div>
+      </div>
+    }>
+      <StudentChatPageContent />
+    </Suspense>
   );
 }
