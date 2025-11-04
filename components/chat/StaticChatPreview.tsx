@@ -18,39 +18,66 @@ export function StaticChatPreview({ className }: StaticChatPreviewProps) {
     {
       id: '1',
       type: 'user',
-      content: 'Can you explain the key concepts from the introduction video?',
+      content: 'How long does it take to set up a Whop account?',
     },
     {
       id: '2',
       type: 'ai',
-      content: 'Based on the Introduction to the Course video, the key concepts covered include foundational principles, core objectives, and the learning path structure. The instructor emphasizes hands-on practice and progressive skill building.',
+      content: 'Setting up your Whop account takes less than 5 minutes from start to finish. The platform guides you through the sign-up process naturally - you click the sign up button, enter your email, confirm with a code, and select "Create" to name your product. According to the video, Whop\'s onboarding team has streamlined the process so you can get your first product live in just 4 minutes.',
       videoReferences: [
         {
-          title: 'Introduction to the Course',
-          timestamp: '2:34',
-          duration: '12:34',
+          title: 'How To Make $100,000 Per Month With Whop',
+          timestamp: '3:34',
+          duration: '24:00',
         },
       ],
     },
     {
       id: '3',
       type: 'user',
-      content: 'What are the best practices mentioned in module 2?',
+      content: 'What makes Whop different from other platforms?',
     },
     {
       id: '4',
       type: 'ai',
-      content: 'Module 2 covers several best practices including code organization, naming conventions, and performance optimization techniques. The key takeaway is maintaining clean, readable code structure.',
+      content: 'Whop stands out because it consolidates everything under one roof - courses, communities, digital products, payments, and more. Unlike other platforms that make you figure everything out yourself, Whop has an in-house team that handles the heavy lifting. The platform offers unmatched reach with over 2 million weekly marketplace visitors, and you can use it modularly - some creators only use it for payments while others use all features. The flexibility and robust payment processing system with multiple payment options (including crypto and buy-now-pay-later) make it unique.',
       videoReferences: [
         {
-          title: 'Getting Started with Basics',
-          timestamp: '8:15',
-          duration: '18:22',
+          title: 'How To Make $100,000 Per Month With Whop',
+          timestamp: '4:04',
+          duration: '24:00',
         },
         {
-          title: 'Best Practices',
-          timestamp: '3:45',
-          duration: '20:30',
+          title: 'How To Make $100,000 Per Month With Whop',
+          timestamp: '4:32',
+          duration: '24:00',
+        },
+      ],
+    },
+    {
+      id: '5',
+      type: 'user',
+      content: 'What are the most important apps to add to my Whop?',
+    },
+    {
+      id: '6',
+      type: 'ai',
+      content: 'The most essential apps to start with are: 1) Announcement App - serves as both internal communication and external email system, crucial for retention. 2) Chat App - absolutely essential for building a thriving community; the "most addicting" category drives marketplace visibility. 3) Course App - powerful for structured content delivery with sequential learning, content protection, and certificates. 4) One-on-One Coaching Call App - allows premium rates and eliminates need for external scheduling tools. These core apps significantly increase user satisfaction and perceived value.',
+      videoReferences: [
+        {
+          title: 'How To Make $100,000 Per Month With Whop',
+          timestamp: '8:57',
+          duration: '24:00',
+        },
+        {
+          title: 'How To Make $100,000 Per Month With Whop',
+          timestamp: '10:14',
+          duration: '24:00',
+        },
+        {
+          title: 'How To Make $100,000 Per Month With Whop',
+          timestamp: '10:46',
+          duration: '24:00',
         },
       ],
     },

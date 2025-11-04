@@ -2,12 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Clock, Zap, TrendingUp, Crown } from 'lucide-react';
+import { ArrowRight, Clock, Zap, TrendingUp, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
 import { VideoSummary } from '@/components/video/VideoSummary';
+import { buildYouTubeEmbedUrl } from '@/lib/video/youtube';
 
 export default function LandingPage() {
   const benefits = [
@@ -61,13 +61,13 @@ export default function LandingPage() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <a href="/api/whop/auth/login">
-                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
+                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
                   Sign In with Whop
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </a>
               <Link href="#demo">
-                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
+                <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg border-2 border-white transform hover:scale-105">
                   Learn More
                 </button>
               </Link>
@@ -80,28 +80,22 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4"
             >
-              {/* Video Placeholder - 2/3 width */}
+              {/* YouTube Video Embed - 2/3 width */}
               <div className="lg:col-span-2">
-                <Card padding="lg" className="overflow-hidden">
+                <Card padding="lg" className="overflow-hidden rounded-xl">
                   <div className="aspect-video rounded-xl border-2 border-accent-orange/30 relative overflow-hidden bg-black">
-                    {/* Video Image */}
-                    <Image
-                      src="/images/video/Whop_Video_001.jpg"
-                      alt="Course Video: How To Make $100,000 Per Month With Whop"
-                      fill
-                      className="object-cover"
-                      priority
+                    <iframe
+                      src={buildYouTubeEmbedUrl('vMZHiBhr0SM', {
+                        rel: 0,
+                        modestbranding: 1,
+                        controls: 1,
+                        autoplay: false,
+                      })}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full rounded-xl"
+                      title="How To Make $100,000 Per Month With Whop"
                     />
-                    
-                    {/* YouTube Play Button Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center z-10">
-                      <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer">
-                        <Play className="w-10 h-10 text-white ml-1" fill="currentColor" />
-                      </div>
-                    </div>
-
-                    {/* Subtle overlay for better play button visibility */}
-                    <div className="absolute inset-0 bg-black/20 z-0" />
                   </div>
                 </Card>
               </div>
@@ -186,13 +180,13 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/api/whop/auth/login">
-              <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg transform hover:scale-105">
+              <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg transform hover:scale-105">
                 Sign In with Whop
                 <ArrowRight className="w-5 h-5" />
               </button>
             </a>
             <Link href="#demo">
-              <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-all shadow-lg transform hover:scale-105">
+              <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d1bba5] text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg transform hover:scale-105">
                 Learn More
               </button>
             </Link>
