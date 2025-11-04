@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Play, Clock, Zap, TrendingUp, Moon } from 'lucide-react';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
@@ -88,40 +89,48 @@ export default async function ExperiencePage({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Video Section - Full Width */}
-        <div className="mb-8">
-          <Card padding="lg" className="overflow-hidden">
-            <div className="aspect-video bg-gradient-to-br from-bg-sidebar to-bg-app rounded-xl border-2 border-accent-orange/30 flex items-center justify-center relative overflow-hidden">
-              {/* Video Placeholder Content */}
-              <div className="text-center z-10">
-                <div className="w-24 h-24 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-accent-orange/40 animate-pulse">
-                  <Play className="w-12 h-12 text-accent-orange" />
+        {/* Video + AI Chat Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Video Section - 2/3 width */}
+          <div className="lg:col-span-2">
+            <Card padding="lg" className="overflow-hidden">
+              <div className="aspect-video rounded-xl border-2 border-accent-orange/30 relative overflow-hidden bg-black">
+                {/* Video Image */}
+                <Image
+                  src="/images/video/Whop_Video_001.jpg"
+                  alt="Course Video: How To Make $100,000 Per Month With Whop"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                
+                {/* YouTube Play Button Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer">
+                    <Play className="w-10 h-10 text-white ml-1" fill="currentColor" />
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-2">Course Video</h3>
-                <p className="text-base text-text-secondary">
-                  Watch your course videos here
+
+                {/* Subtle overlay for better play button visibility */}
+                <div className="absolute inset-0 bg-black/20 z-0" />
+              </div>
+            </Card>
+          </div>
+
+          {/* AI Chat Preview - 1/3 width */}
+          <div className="lg:col-span-1">
+            <Card padding="lg" className="overflow-hidden h-full">
+              <div className="mb-3">
+                <h3 className="text-lg font-bold text-text-primary mb-1">
+                  Ask ChronosAI
+                </h3>
+                <p className="text-sm text-text-secondary">
+                  Get instant answers with timestamps
                 </p>
               </div>
-              
-              {/* Animated background */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-accent-orange/20 via-transparent to-accent-purple/20 animate-pulse"></div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* AI Chat Demo - Full Width Underneath */}
-        <div className="mb-8">
-          <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold text-text-primary mb-2">
-              See ChronosAI in Action
-            </h2>
-            <p className="text-text-secondary">
-              Watch how students get instant answers with timestamp citations
-            </p>
+              <StaticChatPreview className="w-full min-h-[400px] lg:min-h-[500px]" />
+            </Card>
           </div>
-          <StaticChatPreview className="w-full min-h-[600px]" />
         </div>
 
         {/* Access Info */}
