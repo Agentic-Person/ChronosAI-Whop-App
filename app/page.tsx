@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Play, Clock, Zap, TrendingUp, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
+import { VideoSummary } from '@/components/video/VideoSummary';
 
 export default function LandingPage() {
   const benefits = [
@@ -71,16 +72,16 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Video + AI Chat Side by Side */}
+            {/* Video + Video Summary Side by Side */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12"
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6"
             >
               {/* Video Placeholder - 2/3 width */}
               <div className="lg:col-span-2">
-                <Card padding="lg" className="overflow-hidden h-full">
+                <Card padding="lg" className="overflow-hidden">
                   <div className="aspect-video bg-gradient-to-br from-bg-sidebar to-bg-app rounded-xl border-2 border-accent-orange/30 flex items-center justify-center relative overflow-hidden">
                     {/* Video Placeholder Content */}
                     <div className="text-center z-10">
@@ -101,20 +102,30 @@ export default function LandingPage() {
                 </Card>
               </div>
 
-              {/* AI Chat Preview - 1/3 width */}
+              {/* Video Summary - 1/3 width */}
               <div className="lg:col-span-1">
-                <Card padding="lg" className="overflow-hidden h-full">
-                  <div className="mb-3">
-                    <h3 className="text-lg font-bold text-text-primary mb-1">
-                      Ask ChronosAI
-                    </h3>
-                    <p className="text-sm text-text-secondary">
-                      Get instant answers with timestamps
-                    </p>
-                  </div>
-                  <StaticChatPreview className="w-full min-h-[400px] lg:min-h-[500px]" />
-                </Card>
+                <VideoSummary className="h-full" />
               </div>
+            </motion.div>
+
+            {/* AI Chat Below Video */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mb-12"
+            >
+              <Card padding="lg" className="overflow-hidden">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-text-primary mb-1">
+                    Ask ChronosAI
+                  </h3>
+                  <p className="text-sm text-text-secondary">
+                    Get instant answers with timestamps
+                  </p>
+                </div>
+                <StaticChatPreview className="w-full min-h-[400px]" />
+              </Card>
             </motion.div>
 
             {/* Benefits Grid - Below Video/AI Chat */}
