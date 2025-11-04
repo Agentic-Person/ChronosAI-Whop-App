@@ -56,49 +56,72 @@ export function VideoSummary({ className }: VideoSummaryProps) {
   ];
 
   return (
-    <Card padding="lg" className={className}>
-      <div className="mb-4">
-        <h3 className="text-xl font-bold text-text-primary mb-1">
-          ChronosAI
-        </h3>
-        <p className="text-sm text-text-secondary mb-1">
-          Video Summary
-        </p>
-      </div>
+    <>
+      <style jsx global>{`
+        .video-summary-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        .video-summary-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .video-summary-scroll::-webkit-scrollbar-thumb {
+          background-color: rgba(255, 140, 66, 0.5);
+          border-radius: 4px;
+        }
+        .video-summary-scroll::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(255, 140, 66, 0.7);
+        }
+      `}</style>
+      <Card padding="lg" className={`${className} flex flex-col h-full`}>
+        <div className="mb-4 flex-shrink-0">
+          <h3 className="text-xl font-bold text-text-primary mb-1">
+            ChronosAI
+          </h3>
+          <p className="text-sm text-text-secondary mb-1">
+            Video Summary
+          </p>
+        </div>
 
-      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-        {chapters.map((chapter, index) => (
-          <div
-            key={index}
-            className="group relative p-4 rounded-lg border border-border-primary hover:border-accent-orange/50 bg-gradient-to-br from-bg-card/50 to-bg-app/30 transition-all duration-300 hover:shadow-md hover:shadow-accent-orange/10 cursor-pointer"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <div className="w-8 h-8 rounded-lg bg-accent-orange/10 flex items-center justify-center group-hover:bg-accent-orange/20 transition-all">
-                  <Play className="w-4 h-4 text-accent-orange" />
+        <div 
+          className="flex-1 space-y-3 overflow-y-auto pr-2 video-summary-scroll"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255, 140, 66, 0.5) transparent',
+          }}
+        >
+          {chapters.map((chapter, index) => (
+            <div
+              key={index}
+              className="group relative p-4 rounded-lg border border-border-primary hover:border-accent-orange/50 bg-gradient-to-br from-bg-card/50 to-bg-app/30 transition-all duration-300 hover:shadow-md hover:shadow-accent-orange/10 cursor-pointer"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-lg bg-accent-orange/10 flex items-center justify-center group-hover:bg-accent-orange/20 transition-all">
+                    <Play className="w-4 h-4 text-accent-orange" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-sm font-bold text-text-primary group-hover:text-accent-orange transition-colors line-clamp-1">
-                    {chapter.title}
-                  </h4>
-                </div>
-                <p className="text-xs text-text-secondary leading-relaxed mb-2 line-clamp-2">
-                  {chapter.description}
-                </p>
-                <div className="flex items-center gap-2 text-xs text-text-muted">
-                  <Clock className="w-3 h-3" />
-                  <span className="font-mono">{chapter.timestamp}</span>
-                  <span>•</span>
-                  <span>{chapter.duration}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-sm font-bold text-text-primary group-hover:text-accent-orange transition-colors line-clamp-1">
+                      {chapter.title}
+                    </h4>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed mb-2 line-clamp-2">
+                    {chapter.description}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                    <Clock className="w-3 h-3" />
+                    <span className="font-mono">{chapter.timestamp}</span>
+                    <span>•</span>
+                    <span>{chapter.duration}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </Card>
+          ))}
+        </div>
+      </Card>
+    </>
   );
 }
 
