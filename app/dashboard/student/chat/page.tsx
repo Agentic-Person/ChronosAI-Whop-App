@@ -9,7 +9,7 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import { Play, Clock } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 interface Video {
@@ -30,6 +30,7 @@ interface Course {
 
 function StudentChatPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const courseId = searchParams.get('course');
 
   const [videos, setVideos] = useState<Video[]>([]);
@@ -40,28 +41,51 @@ function StudentChatPageContent() {
 
   const creatorId = '00000000-0000-0000-0000-000000000001'; // Dev creator ID
 
-  // Fetch course and videos
+  // Redirect to dashboard if no course selected
   useEffect(() => {
-    if (courseId) {
-      fetchCourseData();
+    console.log('🔍 [Student Chat] courseId from URL:', courseId);
+
+    if (!courseId) {
+      console.warn('⚠️  [Student Chat] No courseId - redirecting to dashboard');
+      toast.error('Please select a course first');
+      router.push('/dashboard');
+      return;
     }
-  }, [courseId]);
+
+    console.log('✅ [Student Chat] Valid courseId, fetching data...');
+    fetchCourseData();
+  }, [courseId, router]);
 
   const fetchCourseData = async () => {
     try {
       setIsLoading(true);
+      console.log(`🔍 [fetchCourseData] Fetching for courseId: ${courseId}`);
 
       // Fetch course details
-      const courseResponse = await fetch(`/api/courses?creatorId=${creatorId}`);
-      if (!courseResponse.ok) throw new Error('Failed to fetch course');
+      const courseUrl = `/api/courses?creatorId=${creatorId}`;
+      console.log(`📡 [fetchCourseData] Fetching courses from: ${courseUrl}`);
+      const courseResponse = await fetch(courseUrl);
+      if (!courseResponse.ok) {
+        console.error(`❌ [fetchCourseData] Course fetch failed: ${courseResponse.status}`);
+        throw new Error('Failed to fetch course');
+      }
       const courses = await courseResponse.json();
+      console.log(`✅ [fetchCourseData] Found ${courses.length} courses`);
+
       const currentCourse = courses.find((c: Course) => c.id === courseId);
+      console.log(`🔍 [fetchCourseData] Current course:`, currentCourse ? currentCourse.title : 'NOT FOUND');
       setCourse(currentCourse || null);
 
       // Fetch videos for this course
-      const videosResponse = await fetch(`/api/creator/videos?creatorId=${creatorId}&courseId=${courseId}`);
-      if (!videosResponse.ok) throw new Error('Failed to fetch videos');
+      const videosUrl = `/api/creator/videos?creatorId=${creatorId}&courseId=${courseId}`;
+      console.log(`📡 [fetchCourseData] Fetching videos from: ${videosUrl}`);
+      const videosResponse = await fetch(videosUrl);
+      if (!videosResponse.ok) {
+        console.error(`❌ [fetchCourseData] Videos fetch failed: ${videosResponse.status}`);
+        throw new Error('Failed to fetch videos');
+      }
       const videosData = await videosResponse.json();
+      console.log(`✅ [fetchCourseData] Received ${videosData.length} videos`);
 
       const formattedVideos = videosData.map((v: any) => ({
         id: v.id,
@@ -73,16 +97,19 @@ function StudentChatPageContent() {
       }));
 
       setVideos(formattedVideos);
+      console.log(`📹 [fetchCourseData] Set ${formattedVideos.length} formatted videos`);
 
       // Select first video by default
       if (formattedVideos.length > 0 && !selectedVideoId) {
         setSelectedVideoId(formattedVideos[0].id);
+        console.log(`✅ [fetchCourseData] Auto-selected first video: ${formattedVideos[0].title}`);
       }
     } catch (error) {
-      console.error('Error fetching course data:', error);
-      toast.error('Failed to load course');
+      console.error('❌ [fetchCourseData] Error:', error);
+      toast.error('Failed to load course. Please try again.');
     } finally {
       setIsLoading(false);
+      console.log('✅ [fetchCourseData] Loading complete');
     }
   };
 
