@@ -92,7 +92,7 @@ export function VideoSummary({ className }: VideoSummaryProps) {
           {chapters.map((chapter, index) => (
             <div
               key={index}
-              className="group relative p-4 rounded-lg border border-border-primary hover:border-accent-orange/50 bg-gradient-to-br from-bg-card/50 to-bg-app/30 transition-all duration-300 hover:shadow-md hover:shadow-accent-orange/10 cursor-pointer"
+              className="group relative p-4 rounded-xl border border-border-primary hover:border-accent-orange/50 bg-gradient-to-br from-bg-card/50 to-bg-app/30 transition-all duration-300 hover:shadow-md hover:shadow-accent-orange/10 cursor-pointer"
             >
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 mt-0.5">

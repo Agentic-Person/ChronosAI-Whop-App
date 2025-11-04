@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Clock, Zap, TrendingUp, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -82,22 +83,25 @@ export default function LandingPage() {
               {/* Video Placeholder - 2/3 width */}
               <div className="lg:col-span-2">
                 <Card padding="lg" className="overflow-hidden">
-                  <div className="aspect-video bg-gradient-to-br from-bg-sidebar to-bg-app rounded-xl border-2 border-accent-orange/30 flex items-center justify-center relative overflow-hidden">
-                    {/* Video Placeholder Content */}
-                    <div className="text-center z-10">
-                      <div className="w-24 h-24 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-accent-orange/40 animate-pulse">
-                        <Play className="w-12 h-12 text-accent-orange" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-text-primary mb-2">Course Video</h3>
-                      <p className="text-base text-text-secondary">
-                        Watch your course videos here
-                      </p>
-                    </div>
+                  <div className="aspect-video rounded-xl border-2 border-accent-orange/30 relative overflow-hidden bg-black">
+                    {/* Video Image */}
+                    <Image
+                      src="/images/video/Whop_Video_001.jpg"
+                      alt="Course Video: How To Make $100,000 Per Month With Whop"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
                     
-                    {/* Animated background */}
-                    <div className="absolute inset-0 opacity-10">
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-accent-orange/20 via-transparent to-accent-purple/20 animate-pulse"></div>
+                    {/* YouTube Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                      <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer">
+                        <Play className="w-10 h-10 text-white ml-1" fill="currentColor" />
+                      </div>
                     </div>
+
+                    {/* Subtle overlay for better play button visibility */}
+                    <div className="absolute inset-0 bg-black/20 z-0" />
                   </div>
                 </Card>
               </div>
