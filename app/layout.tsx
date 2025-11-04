@@ -9,6 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ChronosAI - AI-Powered Learning Platform",
   description: "Transform passive video courses into interactive, personalized learning experiences",
+  icons: {
+    icon: "/images/logo_brand/chronos_FAV.png",
+    shortcut: "/images/logo_brand/chronos_FAV.png",
+    apple: "/images/logo_brand/chronos_FAV.png",
+  },
 };
 
 export default function RootLayout({
