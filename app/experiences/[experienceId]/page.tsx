@@ -38,20 +38,29 @@ export default async function ExperiencePage({
   return (
     <div className="min-h-screen bg-bg-app">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-bg-sidebar via-bg-app to-bg-sidebar border-b border-border-primary">
+      <div className="relative overflow-hidden bg-gradient-to-br from-bg-sidebar via-bg-app to-bg-sidebar">
         {/* Background Effects */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent-orange/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           {/* Title and Slogan */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-gradient">
-              ChronosAI
-            </h1>
-            <p className="text-xl md:text-2xl text-text-secondary font-medium">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Image
+                src="/images/logo_brand/chronos_icon_256.png"
+                alt="ChronosAI Logo"
+                width={64}
+                height={64}
+                className="w-12 h-12 md:w-16 md:h-16"
+              />
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gradient">
+                ChronosAI
+              </h1>
+            </div>
+            <p className="text-2xl md:text-3xl text-white font-medium">
               Reclaim Your Time. Chronos Is Your AI Teaching Assistant.
             </p>
           </div>
@@ -90,9 +99,9 @@ export default async function ExperiencePage({
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Video + AI Chat Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Video Section - 2/3 width */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Video Section - 50% width */}
+          <div className="lg:col-span-1">
             <Card padding="lg" className="overflow-hidden">
               <div className="aspect-video rounded-xl border-2 border-accent-orange/30 relative overflow-hidden bg-black">
                 {/* Video Image */}
