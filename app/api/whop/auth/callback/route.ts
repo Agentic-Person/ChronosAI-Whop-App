@@ -9,6 +9,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { WhopServerSdk } from '@whop/api';
 
+// Force dynamic rendering (uses searchParams and cookies)
+export const dynamic = 'force-dynamic';
+
 // Initialize Whop SDK
 const whopApi = WhopServerSdk({
   appApiKey: process.env.WHOP_API_KEY!,

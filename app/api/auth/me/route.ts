@@ -6,6 +6,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedCreatorDev } from '@/lib/whop/middleware';
 
+// Force dynamic rendering (uses cookies for auth)
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { creator, error } = await getAuthenticatedCreatorDev(req);

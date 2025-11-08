@@ -10,6 +10,9 @@ import ApiCallsTable from '@/components/usage/ApiCallsTable';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 
+// Force dynamic rendering (uses cookies for auth)
+export const dynamic = 'force-dynamic';
+
 /**
  * Loading skeleton for charts
  */
