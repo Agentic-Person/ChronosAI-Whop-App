@@ -1,15 +1,55 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, Zap, TrendingUp, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
 import { VideoSummary } from '@/components/video/VideoSummary';
 import { buildYouTubeEmbedUrl } from '@/lib/video/youtube';
+import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { creator, isLoading, isInIframe } = useWhopAuth();
+
+  // Redirect to dashboard if authenticated (especially when in Whop iframe)
+  useEffect(() => {
+    if (!isLoading && creator) {
+      // User is authenticated - redirect to dashboard
+      router.push('/dashboard');
+    } else if (!isLoading && isInIframe && !creator) {
+      // In Whop iframe but not authenticated - try to authenticate
+      window.location.href = '/api/whop/auth/login';
+    }
+  }, [creator, isLoading, isInIframe, router]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-bg-app flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-orange mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading ChronosAI...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated, show loading while redirecting to dashboard
+  if (creator) {
+    return (
+      <div className="min-h-screen bg-bg-app flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-orange mx-auto"></div>
+          <p className="mt-4 text-text-muted">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   const benefits = [
     {
       icon: Clock,
