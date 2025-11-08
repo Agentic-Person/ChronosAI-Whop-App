@@ -44,8 +44,8 @@
           "value": "nosniff"
         },
         {
-          "key": "X-Frame-Options",
-          "value": "DENY"
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' https://whop.com https://*.whop.com"
         },
         {
           "key": "X-XSS-Protection",

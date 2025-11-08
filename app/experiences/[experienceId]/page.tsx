@@ -1,16 +1,18 @@
-import { cookies } from 'next/headers';
+'use client';
+
 import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Play, Clock, Zap, TrendingUp, Moon } from 'lucide-react';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
+import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
 
-export default async function ExperiencePage({
+export default function ExperiencePage({
   params,
 }: {
   params: { experienceId: string };
 }) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('whop_access_token');
+  // Use unified auth hook (works in both iframe and standalone)
+  const { creator, isLoading, isInIframe } = useWhopAuth();
 
   const benefits = [
     {
@@ -143,16 +145,24 @@ export default async function ExperiencePage({
         </div>
 
         {/* Access Info */}
-        {accessToken ? (
+        {isLoading ? (
+          <div className="p-4 bg-bg-card/50 border border-border-primary rounded-lg text-center">
+            <p className="text-sm text-text-muted">
+              Loading authentication...
+            </p>
+          </div>
+        ) : creator ? (
           <div className="p-4 bg-accent-green/10 border border-accent-green/20 rounded-lg text-center">
             <p className="text-sm text-accent-green">
-              ✓ You're authenticated and ready to learn!
+              ✓ You're authenticated and ready to learn!{isInIframe && ' (Whop iframe)'}
             </p>
           </div>
         ) : (
-          <div className="p-4 bg-accent-red/10 border border-accent-red/20 rounded-lg text-center">
-            <p className="text-sm text-accent-red">
-              ⚠ Not authenticated. Please log in to access all features.
+          <div className="p-4 bg-accent-orange/10 border border-accent-orange/20 rounded-lg text-center">
+            <p className="text-sm text-text-primary">
+              {isInIframe
+                ? '🔄 Syncing with Whop authentication...'
+                : '⚠ Not authenticated. Please log in to access all features.'}
             </p>
           </div>
         )}

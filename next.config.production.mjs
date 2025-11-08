@@ -125,8 +125,8 @@ const nextConfig = {
             value: 'on',
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://whop.com https://*.whop.com",
           },
           {
             key: 'X-Content-Type-Options',

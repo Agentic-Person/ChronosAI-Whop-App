@@ -63,6 +63,7 @@
     "@upstash/ratelimit": "^2.0.6",
     "@vercel/kv": "^3.0.0",
     "@whop/api": "^0.0.51",
+    "@whop/react": "^0.3.0",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

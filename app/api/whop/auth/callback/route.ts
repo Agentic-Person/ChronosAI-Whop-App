@@ -155,10 +155,12 @@ export async function GET(req: NextRequest) {
     const response = NextResponse.redirect(new URL('/dashboard', req.url));
 
     // Store the access token in a secure cookie
+    // sameSite: 'none' required for iframe embedding in Whop
+    // secure: true required when sameSite is 'none'
     response.cookies.set('whop_access_token', access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true, // Always secure (required for sameSite: 'none')
+      sameSite: 'none', // Allow cross-site cookies for Whop iframe
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
@@ -166,8 +168,8 @@ export async function GET(req: NextRequest) {
     // Store whop user ID for quick lookups (not sensitive)
     response.cookies.set('whop_user_id', whopUser.id, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true, // Always secure (required for sameSite: 'none')
+      sameSite: 'none', // Allow cross-site cookies for Whop iframe
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
