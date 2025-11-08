@@ -25,12 +25,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function runMigration() {
   try {
-    console.log('🚀 Running YouTube support migration...\n');
+    console.log('🚀 Running trial system migration...\n');
 
     // Read the migration file
     const migrationPath = path.join(
       __dirname,
-      '../supabase/migrations/20251027000001_add_youtube_support.sql'
+      '../supabase/migrations/20251030_add_trial_system.sql'
     );
     const sql = fs.readFileSync(migrationPath, 'utf-8');
 
@@ -59,7 +59,8 @@ async function runMigration() {
     }
 
     console.log('\n✅ Migration completed successfully!');
-    console.log('\nYou can now import YouTube videos.');
+    console.log('\nTrial system database schema updated.');
+    console.log('Next step: Run npx tsx scripts/setup-demo-content.ts');
   } catch (error: any) {
     console.error('❌ Migration failed:', error.message);
     process.exit(1);

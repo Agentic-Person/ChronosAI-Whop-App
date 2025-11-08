@@ -113,7 +113,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mb-8"
             >
-              <Card padding="lg" className="overflow-hidden">
+              <Card padding="lg" className="overflow-hidden rounded-xl">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold text-text-primary mb-1">
                     Ask ChronosAI
@@ -122,7 +122,7 @@ export default function LandingPage() {
                     Get instant answers with timestamps
                   </p>
                 </div>
-                <StaticChatPreview className="w-full min-h-[400px]" />
+                <StaticChatPreview className="w-full" />
               </Card>
             </motion.div>
 

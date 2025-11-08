@@ -28,8 +28,27 @@ import { cn } from '@/lib/utils';
 import { QRCodeCanvas } from 'qrcode.react';
 import { CourseCard } from '@/components/creator/CourseCard';
 import { AddCourseModal } from '@/components/creator/AddCourseModal';
+import { EditVideoModal } from '@/components/creator/EditVideoModal';
 import { CourseSelector } from '@/components/creator/CourseSelector';
 import toast from 'react-hot-toast';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useCreatorId } from '@/lib/hooks/useCurrentCreator';
 
 type UploadMethod = 'file' | 'youtube' | 'qr';
 type VideoStatus = 'processing' | 'ready' | 'error';
@@ -54,6 +73,148 @@ interface Video {
   course_id?: string;
   views: number;
   completions: number;
+  courses?: {
+    id: string;
+    title: string;
+  };
+}
+
+// Sortable Video Item Component
+interface SortableVideoItemProps {
+  video: Video;
+  index: number;
+  viewMode: ViewMode;
+  courses: Course[];
+  getStatusBadge: (video: Video) => React.ReactNode;
+  handleCourseClick: (course: Course) => void;
+  handleDeleteClick: (video: Video) => void;
+}
+
+function SortableVideoItem({
+  video,
+  index,
+  viewMode,
+  courses,
+  getStatusBadge,
+  handleCourseClick,
+  handleDeleteClick,
+}: SortableVideoItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: video.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      style={style}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      className="p-4 hover:bg-bg-hover transition-colors"
+    >
+      <div className="flex items-center gap-4">
+        <button
+          className="text-text-muted hover:text-text-primary cursor-grab active:cursor-grabbing touch-none"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="w-5 h-5" />
+        </button>
+
+        <div className="w-32 h-18 bg-bg-elevated rounded-lg flex items-center justify-center flex-shrink-0">
+          {video.status === 'ready' ? (
+            <Play className="w-8 h-8 text-accent-cyan" />
+          ) : video.status === 'processing' ? (
+            <Clock className="w-4 h-4 text-accent-yellow animate-spin" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-accent-red" />
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold truncate mb-1">{video.title}</h3>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-text-muted">
+                <span>{video.duration}</span>
+                <span>·</span>
+                <span>Uploaded {video.uploadedAt}</span>
+              </div>
+            </div>
+            {getStatusBadge(video)}
+          </div>
+
+          {video.status === 'ready' && (
+            <div className="flex items-center gap-6 mt-3 text-sm">
+              <div>
+                <span className="text-text-muted">Views:</span>{' '}
+                <span className="font-semibold">{video.views}</span>
+              </div>
+              <div>
+                <span className="text-text-muted">Completions:</span>{' '}
+                <span className="font-semibold">{video.completions}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Course tags - show in All Videos view */}
+          {viewMode === 'all-videos' && (
+            <div className="mt-2">
+              {video.courses ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-text-muted">In course:</span>
+                  <Badge
+                    variant="secondary"
+                    className="text-xs cursor-pointer hover:bg-primary-500/20"
+                    onClick={() => {
+                      const course = courses.find(c => c.id === video.courses?.id);
+                      if (course) handleCourseClick(course);
+                    }}
+                  >
+                    {video.courses.title}
+                  </Badge>
+                </div>
+              ) : (
+                <span className="text-xs text-text-muted">Not in any course yet</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedVideo(video);
+              setShowEditModal(true);
+            }}
+            disabled={video.status !== 'ready'}
+          >
+            <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDeleteClick(video)}
+          >
+            <Trash2 className="w-4 h-4 text-accent-red" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 export default function CreatorVideosPage() {
@@ -74,6 +235,8 @@ export default function CreatorVideosPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState<Video | null>(null);
 
   // Data state
   const [courses, setCourses] = useState<Course[]>([]);
@@ -86,7 +249,17 @@ export default function CreatorVideosPage() {
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const creatorId = '00000000-0000-0000-0000-000000000001'; // Dev creator ID
+
+  // Get authenticated creator ID
+  const { creatorId, isLoading: isLoadingCreator } = useCreatorId();
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch courses on mount
   useEffect(() => {
@@ -135,6 +308,7 @@ export default function CreatorVideosPage() {
           course_id: v.course_id,
           views: v.views || 0,
           completions: v.completions || 0,
+          courses: v.courses,
         };
       });
 
@@ -370,19 +544,26 @@ export default function CreatorVideosPage() {
     }
   };
 
-  const handleDeleteVideo = async (videoId: string) => {
-    if (!confirm('Are you sure you want to delete this video?')) return;
+  const handleDeleteClick = (video: Video) => {
+    setVideoToDelete(video);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!videoToDelete) return;
 
     try {
-      const response = await fetch(`/api/video/delete?id=${videoId}`, {
+      const response = await fetch(`/api/video/delete?id=${videoToDelete.id}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) throw new Error('Failed to delete video');
 
-      setVideos(prev => prev.filter(v => v.id !== videoId));
+      setVideos(prev => prev.filter(v => v.id !== videoToDelete.id));
       fetchCourses(); // Update course stats
       toast.success('Video deleted successfully');
+      setShowDeleteConfirm(false);
+      setVideoToDelete(null);
     } catch (error) {
       console.error('Error deleting video:', error);
       toast.error('Failed to delete video');
@@ -393,6 +574,27 @@ export default function CreatorVideosPage() {
     setSelectedCourse(course);
     setViewMode('course-detail');
     fetchVideos(course.id);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    setVideos((items) => {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over.id);
+
+      const newOrder = arrayMove(items, oldIndex, newIndex);
+
+      // TODO: Save new order to database
+      // This would update a 'position' or 'order' field for each video
+      toast.success('Video order updated');
+
+      return newOrder;
+    });
   };
 
   const handleAddVideosClick = (course: Course) => {
@@ -412,15 +614,18 @@ export default function CreatorVideosPage() {
     }
   };
 
-  const getStatusBadge = (status: VideoStatus) => {
-    switch (status) {
-      case 'ready':
-        return <Badge variant="success">Ready</Badge>;
-      case 'processing':
-        return <Badge variant="warning">Processing</Badge>;
-      case 'error':
-        return <Badge variant="error">Error</Badge>;
+  const getStatusBadge = (video: Video) => {
+    // "Upload Ready" = video file uploaded successfully (ready status)
+    // "Implemented" = video is processed and vectorized (chunks exist)
+    if (video.status === 'error') {
+      return <Badge variant="error">Error</Badge>;
     }
+    if (video.status === 'processing') {
+      return <Badge variant="warning">Processing</Badge>;
+    }
+    // For 'ready' status, check if video is fully implemented (has chunks/transcription)
+    // This will be determined by the backend - for now, show Upload Ready
+    return <Badge className="bg-green-500 text-white">Upload Ready</Badge>;
   };
 
   // Calculate stats
@@ -431,6 +636,18 @@ export default function CreatorVideosPage() {
                     videos.filter(v => v.status === 'processing').length,
     queueCount: uploadQueue.length,
   };
+
+  // Show loading state while authenticating
+  if (isLoadingCreator || !creatorId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-orange mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -509,14 +726,14 @@ export default function CreatorVideosPage() {
 
       {/* Tab Navigation */}
       {viewMode !== 'course-detail' && (
-        <div className="flex gap-2 mb-6 p-1 bg-bg-elevated rounded-lg w-fit">
+        <div className="flex gap-2 mb-6 p-1 bg-bg-elevated rounded-xl w-fit">
           <button
             onClick={() => setViewMode('courses')}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+              'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all',
               viewMode === 'courses'
-                ? 'bg-bg-app text-text-primary shadow-md'
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-bg-app text-text-primary shadow-md border-2 border-primary-500'
+                : 'text-text-secondary hover:text-text-primary border border-transparent'
             )}
           >
             <Layers className="w-4 h-4" />
@@ -525,10 +742,10 @@ export default function CreatorVideosPage() {
           <button
             onClick={() => setViewMode('all-videos')}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+              'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all',
               viewMode === 'all-videos'
-                ? 'bg-bg-app text-text-primary shadow-md'
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-bg-app text-text-primary shadow-md border-2 border-primary-500'
+                : 'text-text-secondary hover:text-text-primary border border-transparent'
             )}
           >
             <VideoIcon className="w-4 h-4" />
@@ -576,80 +793,37 @@ export default function CreatorVideosPage() {
             </h2>
           </div>
 
-          <div className="divide-y divide-border-default">
-            {videos
-              .filter(v => viewMode === 'all-videos' || v.course_id === selectedCourse?.id)
-              .map((video, index) => (
-                <motion.div
-                  key={video.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="p-4 hover:bg-bg-hover transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <button className="text-text-muted hover:text-text-primary cursor-grab active:cursor-grabbing">
-                      <GripVertical className="w-5 h-5" />
-                    </button>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={videos
+                .filter(v => viewMode === 'all-videos' ? true : v.course_id === selectedCourse?.id)
+                .map(v => v.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="divide-y divide-border-default">
+                {videos
+                  .filter(v => viewMode === 'all-videos' ? true : v.course_id === selectedCourse?.id)
+                  .map((video, index) => (
+                    <SortableVideoItem
+                      key={video.id}
+                      video={video}
+                      index={index}
+                      viewMode={viewMode}
+                      courses={courses}
+                      getStatusBadge={getStatusBadge}
+                      handleCourseClick={handleCourseClick}
+                      handleDeleteClick={handleDeleteClick}
+                    />
+                  ))}
+              </div>
+            </SortableContext>
+          </DndContext>
 
-                    <div className="w-32 h-18 bg-bg-elevated rounded-lg flex items-center justify-center flex-shrink-0">
-                      {video.status === 'ready' ? (
-                        <Play className="w-8 h-8 text-accent-cyan" />
-                      ) : (
-                        getStatusIcon(video.status)
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate mb-1">{video.title}</h3>
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-text-muted">
-                            <span>{video.duration}</span>
-                            <span>·</span>
-                            <span>Uploaded {video.uploadedAt}</span>
-                          </div>
-                        </div>
-                        {getStatusBadge(video.status)}
-                      </div>
-
-                      {video.status === 'ready' && (
-                        <div className="flex items-center gap-6 mt-3 text-sm">
-                          <div>
-                            <span className="text-text-muted">Views:</span>{' '}
-                            <span className="font-semibold">{video.views}</span>
-                          </div>
-                          <div>
-                            <span className="text-text-muted">Completions:</span>{' '}
-                            <span className="font-semibold">{video.completions}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {/* TODO: Implement edit */}}
-                        disabled={video.status !== 'ready'}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteVideo(video.id)}
-                      >
-                        <Trash2 className="w-4 h-4 text-accent-red" />
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-          </div>
-
-          {videos.filter(v => viewMode === 'all-videos' || v.course_id === selectedCourse?.id).length === 0 && (
+          {videos.filter(v => viewMode === 'all-videos' ? true : v.course_id === selectedCourse?.id).length === 0 && (
             <div className="p-12 text-center">
               <FolderOpen className="w-16 h-16 text-text-muted mx-auto mb-4" />
               <p className="text-text-muted mb-4">No videos in this {viewMode === 'course-detail' ? 'course' : 'collection'} yet</p>
@@ -683,14 +857,14 @@ export default function CreatorVideosPage() {
           />
 
           {/* Tab Buttons */}
-          <div className="flex gap-2 p-1 bg-bg-elevated rounded-lg">
+          <div className="flex gap-2 p-1 bg-bg-elevated rounded-xl">
             <button
               onClick={() => setUploadMethod('file')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all',
+                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all',
                 uploadMethod === 'file'
-                  ? 'bg-bg-app text-text-primary shadow-md'
-                  : 'text-text-secondary hover:text-text-primary'
+                  ? 'bg-bg-app text-text-primary shadow-md border-2 border-primary-500'
+                  : 'text-text-secondary hover:text-text-primary border border-transparent'
               )}
             >
               <Upload className="w-4 h-4" />
@@ -699,10 +873,10 @@ export default function CreatorVideosPage() {
             <button
               onClick={() => setUploadMethod('youtube')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all',
+                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all',
                 uploadMethod === 'youtube'
-                  ? 'bg-bg-app text-text-primary shadow-md'
-                  : 'text-text-secondary hover:text-text-primary'
+                  ? 'bg-bg-app text-text-primary shadow-md border-2 border-primary-500'
+                  : 'text-text-secondary hover:text-text-primary border border-transparent'
               )}
             >
               <Youtube className="w-4 h-4" />
@@ -711,10 +885,10 @@ export default function CreatorVideosPage() {
             <button
               onClick={() => setUploadMethod('qr')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all',
+                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all',
                 uploadMethod === 'qr'
-                  ? 'bg-bg-app text-text-primary shadow-md'
-                  : 'text-text-secondary hover:text-text-primary'
+                  ? 'bg-bg-app text-text-primary shadow-md border-2 border-primary-500'
+                  : 'text-text-secondary hover:text-text-primary border border-transparent'
               )}
             >
               <QrCode className="w-4 h-4" />
@@ -888,6 +1062,63 @@ export default function CreatorVideosPage() {
         }}
         creatorId={creatorId}
       />
+
+      {/* Edit Video Modal */}
+      {selectedVideo && (
+        <EditVideoModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedVideo(null);
+          }}
+          video={selectedVideo}
+          courses={courses}
+          onVideoUpdated={() => {
+            fetchVideos();
+            setShowEditModal(false);
+            setSelectedVideo(null);
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setVideoToDelete(null);
+        }}
+        title="Delete Video?"
+        size="sm"
+      >
+        <div className="space-y-6">
+          <p className="text-text-secondary">
+            Are you sure you want to delete <span className="font-semibold text-text-primary">"{videoToDelete?.title}"</span>?
+          </p>
+          <p className="text-sm text-text-muted">
+            This will remove the video from all courses and delete it permanently. This action cannot be undone.
+          </p>
+
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setVideoToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              className="bg-accent-red hover:bg-accent-red/90"
+              onClick={handleConfirmDelete}
+            >
+              Delete Video
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

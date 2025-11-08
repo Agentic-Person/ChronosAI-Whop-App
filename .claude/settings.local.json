@@ -12,9 +12,17 @@
       "Bash(supabase db execute:*)",
       "Bash(supabase db push:*)",
       "Bash(vercel env add:*)",
-      "Bash(vercel env:*)"
+      "Bash(vercel env:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm test:*)",
+      "Bash(node scripts/generate-encryption-key.js:*)",
+      "Bash(npm run build:*)",
+      "mcp__desktop-commander__write_file",
+      "Bash(npx tsc:*)",
+      "mcp__whop__list_products"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true
 }

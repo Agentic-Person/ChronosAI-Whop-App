@@ -48,22 +48,22 @@
 /* === CARDS === */
 .card {
   background-color: var(--bg-card);
-  border: 1px solid var(--border-teal);
+  border: 1px solid rgba(255, 140, 66, 0.3);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  box-shadow: var(--shadow-teal-glow);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.2);
 }
 
 .card-elevated {
   background-color: var(--bg-elevated);
-  border: 1px solid var(--border-teal);
-  box-shadow: var(--shadow-teal-glow);
+  border: 1px solid rgba(255, 140, 66, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.2);
 }
 
 .card-outlined {
   background-color: transparent;
-  border: 2px solid var(--border-teal);
-  box-shadow: var(--shadow-teal-glow);
+  border: 2px solid rgba(255, 140, 66, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.2);
 }
 
 .card-hover {

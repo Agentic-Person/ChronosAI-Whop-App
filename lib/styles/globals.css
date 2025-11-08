@@ -3,24 +3,38 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* === BACKGROUNDS (Whop Brown Theme) === */
-    --bg-app: #1a1410;
-    --bg-sidebar: #251e18;
-    --bg-card: #2d2620;
-    --bg-elevated: #3a332b;
-    --bg-hover: #4a3f35;
+  /* Enforce dark theme globally */
+  * {
+    @apply border-border-default/30;
+  }
 
-    /* === ACCENTS (Whop Orange/Brown Theme) === */
-    --accent-cyan: #ff6b35;
-    --accent-orange: #ff8c42;
-    --accent-teal: #14b8a6;
-    --accent-green: #00ff88;
-    --accent-purple: #8b5cf6;
-    --accent-pink: #ec4899;
-    --accent-yellow: #fbbf24;
-    --accent-red: #ef4444;
-    --accent-brown: #8b4513;
+  body {
+    @apply bg-bg-app text-text-primary min-h-screen antialiased;
+    /* Ensure consistent dark background */
+    background-color: rgb(var(--bg-app));
+    color: rgb(var(--text-primary));
+  }
+
+  :root {
+    /* === BACKGROUNDS (Whop Brown Theme) - RGB format for Tailwind opacity === */
+    --bg-app: 26 20 16;
+    --bg-sidebar: 37 30 24;
+    --bg-card: 45 38 32;
+    --bg-elevated: 58 51 43;
+    --bg-hover: 74 63 53;
+
+    /* === ACCENTS (Whop Orange/Brown Theme) - RGB format for Tailwind opacity === */
+    --accent-cyan: 255 107 53;
+    --accent-orange: 255 140 66;
+    --accent-teal: 20 184 166;
+    --accent-green: 0 255 136;
+    --accent-purple: 139 92 246;
+    --accent-pink: 236 72 153;
+    --accent-yellow: 251 191 36;
+    --accent-red: 239 68 68;
+    --accent-brown: 139 69 19;
+    --accent-indigo: 99 102 241;      /* #6366f1 */
+    --accent-blue: 59 130 246;        /* #3b82f6 */
 
     /* === MODULE COLORS === */
     --module-1-color: #059669;
@@ -35,19 +49,19 @@
     --module-4-color: #dc2626;
     --module-4-bg: rgba(220, 38, 38, 0.1);
 
-    /* === TEXT === */
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --text-disabled: #4b5563;
+    /* === TEXT - RGB format for Tailwind opacity === */
+    --text-primary: 249 250 251;
+    --text-secondary: 156 163 175;
+    --text-muted: 107 114 128;
+    --text-disabled: 75 85 99;
 
-    /* === BORDERS === */
-    --border-default: rgba(255, 200, 150, 0.1);
-    --border-hover: rgba(255, 200, 150, 0.2);
-    --border-focus: var(--accent-cyan);
-    --border-primary: rgba(255, 107, 53, 0.3);
-    --border-teal: rgba(255, 107, 53, 0.3);
-    --border-teal-glow: rgba(255, 107, 53, 0.15);
+    /* === BORDERS - RGB format for Tailwind opacity === */
+    --border-default: 255 200 150;
+    --border-hover: 255 200 150;
+    --border-focus: 255 107 53;
+    --border-primary: 255 107 53;
+    --border-teal: 255 107 53;
+    --border-teal-glow: 255 107 53;
 
     /* === SHADOWS === */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -137,13 +151,13 @@
 
   html {
     font-family: var(--font-primary);
-    background-color: var(--bg-app);
+    background-color: rgb(var(--bg-app));
   }
 
   body {
     @apply antialiased;
-    background-color: var(--bg-app);
-    color: var(--text-primary);
+    background-color: rgb(var(--bg-app));
+    color: rgb(var(--text-primary));
     font-family: var(--font-primary);
     line-height: var(--leading-normal);
   }
@@ -152,6 +166,7 @@
     font-family: var(--font-display);
     font-weight: var(--font-bold);
     line-height: var(--leading-tight);
+    color: rgb(var(--text-primary));
   }
 
   h1 {
@@ -289,10 +304,29 @@
     animation: scaleUp 0.3s ease-out;
   }
 
-  /* GPU Acceleration */
-  .gpu-accelerated {
-    transform: translateZ(0);
-    will-change: transform;
+  /* Custom Scrollbar for Chat */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 140, 66, 0.3);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 140, 66, 0.5);
+  }
+
+  /* Firefox scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 140, 66, 0.3) transparent;
   }
 }
 

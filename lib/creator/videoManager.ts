@@ -127,9 +127,15 @@ export async function getCreatorVideosWithStats(creatorId: string, courseId?: st
         id,
         completed,
         completion_percentage
+      ),
+      courses:course_id (
+        id,
+        title
       )
     `)
-    .eq('creator_id', creatorId);
+    .eq('creator_id', creatorId)
+    // CRITICAL: Only show this creator's content, never demo content from other creators
+    .or(`is_demo.is.null,and(is_demo.eq.false),and(is_demo.eq.true,creator_id.eq.${creatorId})`);
 
   // Filter by course if provided
   if (courseId) {
@@ -144,6 +150,7 @@ export async function getCreatorVideosWithStats(creatorId: string, courseId?: st
   console.log('Error:', error);
   if (videos) {
     console.log('Video titles:', videos.map(v => v.title));
+    console.log('Video URLs:', videos.map(v => ({ id: v.id, url: v.video_url || v.url, duration: v.duration })));
   }
 
   if (error) {
@@ -186,6 +193,8 @@ export async function searchVideos(creatorId: string, query: string): Promise<Vi
     .from('videos')
     .select('*')
     .eq('creator_id', creatorId)
+    // Filter out demo content from other creators
+    .or(`is_demo.is.null,and(is_demo.eq.false),and(is_demo.eq.true,creator_id.eq.${creatorId})`)
     .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
     .order('created_at', { ascending: false });
 

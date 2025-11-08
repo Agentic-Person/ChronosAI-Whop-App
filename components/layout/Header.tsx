@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="header-right">
         {user.daysActive !== undefined && (
           <Tooltip content="Days Active">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card">
+            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-accent-cyan/15 to-accent-orange/10 backdrop-blur-sm border border-accent-orange/30 shadow-sm shadow-accent-cyan/10">
               <Calendar size={18} className="text-accent-cyan" />
               <span className="text-sm font-semibold">{user.daysActive}</span>
             </div>
@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
         <Tooltip content="Total XP">
           <Link
             href="/dashboard/achievements"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card hover:bg-bg-hover transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-accent-yellow/15 to-accent-orange/10 backdrop-blur-sm border border-accent-orange/30 hover:border-accent-orange/50 hover:shadow-md hover:shadow-accent-yellow/20 transition-all duration-300 transform hover:scale-105"
           >
             <Zap size={18} className="text-accent-yellow" />
             <span className="text-sm font-semibold hidden sm:inline">{user.xp} XP</span>
@@ -134,14 +134,14 @@ export const Header: React.FC<HeaderProps> = ({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowUserMenu(false)}
               />
-              <div className="absolute right-0 mt-2 w-48 bg-bg-card border border-border-default rounded-lg shadow-lg z-20 overflow-hidden">
-                <div className="px-4 py-3 border-b border-border-default">
+              <div className="absolute right-0 mt-2 w-48 bg-bg-card/95 backdrop-blur-md border border-accent-orange/30 rounded-xl shadow-lg shadow-accent-orange/10 z-20 overflow-hidden">
+                <div className="px-4 py-3 border-b border-accent-orange/20 bg-gradient-to-br from-accent-orange/10 to-accent-yellow/5">
                   <p className="text-sm font-semibold text-text-primary">{user.name}</p>
                   <p className="text-xs text-text-muted">Level {Math.floor(user.xp / 100)}</p>
                 </div>
                 <Link
                   href="/dashboard/profile"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-gradient-to-br hover:from-accent-orange/10 hover:to-accent-yellow/5 hover:text-text-primary transition-all duration-200"
                   onClick={() => setShowUserMenu(false)}
                 >
                   <User size={16} />
@@ -152,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setShowUserMenu(false);
                     handleLogout();
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-gradient-to-br hover:from-accent-orange/10 hover:to-accent-yellow/5 hover:text-text-primary transition-all duration-200 text-left"
                 >
                   <LogOut size={16} />
                   Logout

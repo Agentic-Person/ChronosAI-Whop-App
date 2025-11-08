@@ -29,6 +29,7 @@ interface ChatUsageInfo {
 interface ChatInterfaceProps {
   sessionId?: string;
   contextType?: 'general' | 'project-specific' | 'quiz-help';
+  creatorId?: string; // Creator ID for chat context
   onVideoClick?: (videoId: string, timestamp: number) => void;
   className?: string;
   isFloating?: boolean; // Floating chat widget mode
@@ -37,6 +38,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   sessionId: initialSessionId,
   contextType = 'general',
+  creatorId,
   onVideoClick,
   className,
   isFloating = false,
@@ -97,6 +99,7 @@ export function ChatInterface({
           message: content,
           session_id: sessionId,
           context_type: contextType,
+          creator_id: creatorId,
         }),
       });
 
@@ -284,7 +287,7 @@ export function ChatInterface({
             {usage.remaining === 0 && (
               <button
                 onClick={() => setShowUpgradeModal(true)}
-                className="px-3 py-1 text-xs font-semibold bg-accent-orange text-white rounded-md hover:bg-accent-orange/90 transition"
+                className="px-3 py-1 text-xs font-semibold bg-indigo-500 text-white rounded-md hover:bg-indigo-500/90 transition"
               >
                 Upgrade Now
               </button>

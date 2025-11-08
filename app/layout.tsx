@@ -26,8 +26,8 @@ export default function RootLayout({
   const user = undefined;
 
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} bg-bg-app text-text-primary antialiased min-h-screen`}>
         {/* Global Navigation - appears on all pages except landing */}
         <ConditionalNavigation user={user} />
 

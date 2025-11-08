@@ -10,6 +10,59 @@ import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(request: NextRequest) {
+  try {
+    // Get authenticated user
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const creatorId = searchParams.get('creator_id');
+    const limit = parseInt(searchParams.get('limit') || '100');
+
+    // Fetch recent API usage logs
+    let query = supabase
+      .from('api_usage_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (creatorId) {
+      query = query.eq('creator_id', creatorId);
+    }
+
+    const { data: logs, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        details: logs || [],
+      },
+    });
+  } catch (error) {
+    console.error('Usage export GET API error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch usage logs',
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user

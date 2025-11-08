@@ -68,13 +68,103 @@ export async function GET(req: NextRequest) {
 
     console.log('Whop OAuth successful, access token received');
 
+    // Get user info from Whop
+    const userResponse = await whopApi.users.getCurrentUser({
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    if (!userResponse.ok) {
+      console.error('Failed to get user info:', userResponse.error);
+      throw new Error('Failed to get user information');
+    }
+
+    const whopUser = userResponse.user;
+    console.log('Whop user info retrieved:', whopUser.id);
+
+    // Get user's memberships to determine plan
+    const membershipsResponse = await whopApi.memberships.listMemberships({
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const memberships = membershipsResponse.ok ? membershipsResponse.memberships : [];
+    const activeMembership = memberships.find(
+      (m: any) => m.valid && m.status === 'active'
+    );
+
+    // Extract plan tier
+    const extractPlanTier = (membership: any): string => {
+      const plan = membership.plan || {};
+      const planName = (plan.name || '').toLowerCase();
+      if (planName.includes('enterprise')) return 'enterprise';
+      if (planName.includes('pro') || planName.includes('professional')) return 'pro';
+      if (planName.includes('basic') || planName.includes('starter')) return 'basic';
+      return 'basic';
+    };
+
+    const planTier = activeMembership ? extractPlanTier(activeMembership) : 'basic';
+
+    // Create or update creator in database
+    const supabase = createClient();
+
+    const creatorData = {
+      whop_user_id: whopUser.id,
+      email: whopUser.email || '',
+      company_name: whopUser.username || 'New Creator',
+      current_plan: planTier,
+      membership_id: activeMembership?.id,
+      membership_valid: !!activeMembership?.valid,
+      subscription_tier: planTier,
+      settings: {},
+      updated_at: new Date().toISOString(),
+    };
+
+    // Check if creator exists
+    const { data: existingCreator } = await supabase
+      .from('creators')
+      .select('id')
+      .eq('whop_user_id', whopUser.id)
+      .single();
+
+    if (existingCreator) {
+      // Update existing creator
+      await supabase
+        .from('creators')
+        .update(creatorData)
+        .eq('whop_user_id', whopUser.id);
+      console.log('Updated existing creator:', existingCreator.id);
+    } else {
+      // Create new creator
+      const { data: newCreator, error: createError } = await supabase
+        .from('creators')
+        .insert(creatorData)
+        .select('id')
+        .single();
+
+      if (createError) {
+        console.error('Failed to create creator:', createError);
+        throw new Error('Failed to create user account');
+      }
+      console.log('Created new creator:', newCreator?.id);
+    }
+
     // Redirect to dashboard with the access token stored in a cookie
     const response = NextResponse.redirect(new URL('/dashboard', req.url));
 
     // Store the access token in a secure cookie
-    // WARNING: This is a simplified implementation for development
-    // In production, you should encrypt the token and/or use server-side session storage
     response.cookies.set('whop_access_token', access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
+    // Store whop user ID for quick lookups (not sensitive)
+    response.cookies.set('whop_user_id', whopUser.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -85,6 +175,7 @@ export async function GET(req: NextRequest) {
     // Clear the OAuth state cookie
     response.cookies.delete('whop_oauth_state');
 
+    console.log('OAuth callback complete, redirecting to dashboard');
     return response;
 
   } catch (error) {

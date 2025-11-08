@@ -64,7 +64,7 @@ export function MessageInput({
   const canSend = message.trim().length > 0 && !disabled && !isOverLimit;
 
   return (
-    <div className={cn('border-t border-teal bg-bg-card p-4', className)} style={{ boxShadow: 'var(--shadow-teal-glow)' }}>
+    <div className={cn('border-t border-teal bg-bg-card/80 backdrop-blur-sm p-4', className)} style={{ boxShadow: 'var(--shadow-teal-glow)' }}>
       <div className="flex gap-3 items-end">
         {/* Textarea */}
         <div className="flex-1 relative">
@@ -77,12 +77,12 @@ export function MessageInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              'w-full resize-none rounded-lg border border-teal bg-bg-elevated text-text-primary placeholder-text-muted px-4 py-2.5 text-sm focus:border-accent-orange focus:outline-none disabled:bg-bg-app disabled:text-text-muted',
+              'w-full resize-none rounded-xl border border-teal bg-bg-elevated text-text-primary placeholder-text-muted px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none disabled:bg-bg-app disabled:text-text-muted transition-all',
               'min-h-[44px] max-h-[150px]'
             )}
             style={{ boxShadow: 'var(--shadow-teal-glow)' }}
             onFocus={(e) => {
-              e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.15)';
+              e.currentTarget.style.boxShadow = '0 8px 30px rgba(99, 102, 241, 0.3), 0 0 60px rgba(99, 102, 241, 0.15)';
             }}
             onBlur={(e) => {
               e.currentTarget.style.boxShadow = 'var(--shadow-teal-glow)';
@@ -93,7 +93,7 @@ export function MessageInput({
           {characterCount > 0 && (
             <div
               className={cn(
-                'absolute bottom-2 right-2 text-xs',
+                'absolute bottom-3 right-3 text-xs px-1.5 py-0.5 rounded-md bg-bg-card/80 backdrop-blur-sm',
                 isOverLimit ? 'text-red-400' : 'text-text-muted'
               )}
             >
@@ -107,9 +107,9 @@ export function MessageInput({
           onClick={handleSend}
           disabled={!canSend}
           className={cn(
-            'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg transition-all',
+            'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl transition-all transform',
             canSend
-              ? 'bg-gradient-primary text-white hover:opacity-90 active:scale-95 shadow-md'
+              ? 'bg-gradient-to-br from-indigo-500 to-blue-500 text-white hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/30'
               : 'bg-bg-elevated text-text-muted cursor-not-allowed border border-border-default'
           )}
           aria-label="Send message"
@@ -124,7 +124,7 @@ export function MessageInput({
 
       {/* Helper Text */}
       <p className="mt-2 text-xs text-text-muted">
-        Press <kbd className="px-1.5 py-0.5 bg-bg-elevated rounded border border-border-default font-mono text-text-secondary">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-elevated rounded border border-border-default font-mono text-text-secondary">Shift+Enter</kbd> for new line
+        Press <kbd className="px-1.5 py-0.5 bg-bg-elevated rounded-md border border-border-default font-mono text-text-secondary">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-elevated rounded-md border border-border-default font-mono text-text-secondary">Shift+Enter</kbd> for new line
       </p>
     </div>
   );

@@ -30,10 +30,15 @@ export function MessageList({
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(messages.length);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom only when NEW messages are added
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll if messages were actually added (not on initial mount)
+    if (messages.length > prevMessageCountRef.current && messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
 
   return (
@@ -81,7 +86,7 @@ function Message({ message, onFeedback, onVideoClick }: MessageProps) {
       {/* Avatar */}
       <div className={cn(
         'flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
-        isUser ? 'bg-accent-orange/20 text-accent-orange' : 'bg-bg-elevated text-text-muted'
+        isUser ? 'bg-indigo-500/20 text-indigo-500' : 'bg-bg-elevated text-text-muted'
       )}>
         {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
       </div>
@@ -91,9 +96,9 @@ function Message({ message, onFeedback, onVideoClick }: MessageProps) {
         {/* Message Bubble */}
         <div
           className={cn(
-            'inline-block rounded-lg px-4 py-2 max-w-[80%]',
+            'inline-block rounded-2xl px-4 py-3 max-w-[80%]',
             isUser
-              ? 'bg-gradient-primary text-white'
+              ? 'bg-gradient-to-br from-indigo-500 to-blue-500 text-white shadow-lg shadow-indigo-500/20'
               : 'bg-bg-elevated text-text-primary border border-teal'
           )}
           style={!isUser ? { boxShadow: 'var(--shadow-teal-glow)' } : undefined}
@@ -157,7 +162,7 @@ function FeedbackButtons({
       <button
         onClick={() => onFeedback(messageId, 'positive')}
         className={cn(
-          'p-1 rounded hover:bg-gray-200 transition-colors',
+          'p-1.5 rounded-xl hover:bg-gray-200 transition-colors',
           currentFeedback === 'positive' ? 'text-green-600 bg-green-50' : 'text-gray-400'
         )}
         aria-label="Thumbs up"
@@ -167,7 +172,7 @@ function FeedbackButtons({
       <button
         onClick={() => onFeedback(messageId, 'negative')}
         className={cn(
-          'p-1 rounded hover:bg-gray-200 transition-colors',
+          'p-1.5 rounded-xl hover:bg-gray-200 transition-colors',
           currentFeedback === 'negative' ? 'text-red-600 bg-red-50' : 'text-gray-400'
         )}
         aria-label="Thumbs down"
@@ -184,8 +189,8 @@ function FeedbackButtons({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center py-12">
-      <div className="h-16 w-16 rounded-full bg-accent-orange/10 flex items-center justify-center mb-4 border border-teal" style={{ boxShadow: 'var(--shadow-teal-glow)' }}>
-        <Bot className="h-8 w-8 text-accent-orange" />
+      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-blue-500/10 flex items-center justify-center mb-4 border border-teal shadow-lg shadow-indigo-500/20" style={{ boxShadow: 'var(--shadow-teal-glow)' }}>
+        <Bot className="h-8 w-8 text-indigo-500" />
       </div>
       <h3 className="text-lg font-semibold text-text-primary mb-2">
         Ask me anything about the course
@@ -214,10 +219,10 @@ function EmptyState() {
 function SuggestedQuestion({ text }: { text: string }) {
   return (
     <div
-      className="text-left p-3 bg-bg-elevated rounded-lg border border-teal text-sm text-text-secondary hover:bg-bg-hover hover:border-accent-orange cursor-pointer transition-all"
+      className="text-left p-3 bg-bg-elevated rounded-xl border border-teal text-sm text-text-secondary hover:bg-bg-hover hover:border-indigo-500 cursor-pointer transition-all transform hover:scale-[1.02]"
       style={{ boxShadow: 'var(--shadow-teal-glow)' }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.15)';
+        e.currentTarget.style.boxShadow = '0 8px 30px rgba(99, 102, 241, 0.3), 0 0 60px rgba(99, 102, 241, 0.15)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = 'var(--shadow-teal-glow)';
@@ -234,14 +239,14 @@ function SuggestedQuestion({ text }: { text: string }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3">
-      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-bg-elevated flex items-center justify-center">
+      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-bg-elevated flex items-center justify-center border border-teal shadow-sm">
         <Bot className="h-5 w-5 text-text-muted" />
       </div>
-      <div className="bg-bg-elevated border border-border-default rounded-lg px-4 py-3">
+      <div className="bg-bg-elevated border border-border-default rounded-2xl px-4 py-3 shadow-sm">
         <div className="flex gap-1">
-          <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <div className="w-2 h-2 bg-accent-orange rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>

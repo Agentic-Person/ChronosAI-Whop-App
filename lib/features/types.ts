@@ -61,9 +61,9 @@ export const FEATURE_PLAN_MAPPING: Record<Feature, PlanTier> = {
   [Feature.FEATURE_QUIZZES]: PlanTier.PRO,
   [Feature.FEATURE_PROJECTS]: PlanTier.PRO,
   [Feature.FEATURE_ADVANCED_ANALYTICS]: PlanTier.PRO,
+  [Feature.FEATURE_CREATOR_DASHBOARD]: PlanTier.PRO, // MVP: Available for PRO and ENTERPRISE
 
   // ENTERPRISE tier features
-  [Feature.FEATURE_CREATOR_DASHBOARD]: PlanTier.ENTERPRISE,
   [Feature.FEATURE_STUDENT_MANAGEMENT]: PlanTier.ENTERPRISE,
   [Feature.FEATURE_AI_STUDY_BUDDY]: PlanTier.ENTERPRISE,
   [Feature.FEATURE_STUDY_GROUPS]: PlanTier.ENTERPRISE,
@@ -156,14 +156,14 @@ export const FEATURE_METADATA: Record<Feature, FeatureMetadata> = {
     category: 'analytics',
     icon: 'BarChart3',
   },
-
-  // ENTERPRISE Features
   [Feature.FEATURE_CREATOR_DASHBOARD]: {
     name: 'Creator Dashboard',
-    description: 'Comprehensive creator tools and insights',
-    category: 'advanced',
+    description: 'Comprehensive creator tools, analytics, and video summaries with usage tracking',
+    category: 'analytics',
     icon: 'LayoutDashboard',
   },
+
+  // ENTERPRISE Features
   [Feature.FEATURE_STUDENT_MANAGEMENT]: {
     name: 'Student Management',
     description: 'Advanced student roster and support tools',
@@ -286,6 +286,7 @@ export const PLAN_CONFIGS: Record<PlanTier, PlanTierConfig> = {
       Feature.FEATURE_QUIZZES,
       Feature.FEATURE_PROJECTS,
       Feature.FEATURE_ADVANCED_ANALYTICS,
+      Feature.FEATURE_CREATOR_DASHBOARD, // MVP: Creator Dashboard available for PRO+
     ],
     limits: {
       maxVideos: 500,

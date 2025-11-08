@@ -1,0 +1,79 @@
+{
+  // ============================================
+  // EDITOR PANEL CONTROL SETTINGS
+  // ============================================
+  
+  // Control where new editors open (right = opens to the right of current editor)
+  "workbench.editor.openPositioning": "right",
+  
+  // Prevent editors from opening in preview mode (which can overwrite tabs)
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.enablePreviewFromCodeNavigation": false,
+  
+  // Don't reveal already-open files when navigating
+  "workbench.editor.revealIfOpen": false,
+  
+  // Control split editor behavior
+  "workbench.editor.splitOnOpen": false,
+  
+  // ============================================
+  // PANEL CONTROL SETTINGS
+  // ============================================
+  
+  // Panel defaults to bottom (for other panels like output, problems, etc.)
+  "workbench.panel.defaultLocation": "bottom",
+  
+  // Don't auto-maximize panels
+  "workbench.panel.opensMaximized": "never",
+  
+  // ============================================
+  // TERMINAL SETTINGS
+  // ============================================
+  
+  // Terminal opens in editor area (right side) instead of bottom panel
+  // You can manually move it to bottom panel if needed via View menu
+  "terminal.integrated.defaultLocation": "editor",
+  
+  // ============================================
+  // SIDEBAR LAYOUT SETTINGS
+  // ============================================
+  
+  // Primary sidebar (left) - File Explorer stays here
+  "workbench.sideBar.location": "left",
+  
+  // ============================================
+  // CURSOR/COMPOSER SETTINGS
+  // ============================================
+  
+  // Desired Layout (left to right):
+  // 1. File Explorer (left sidebar)
+  // 2. Editor area (middle)
+  // 3. Composer/Claude Code panel (right sidebar or panel)
+  // 4. Terminal (right side of editor area)
+  // 5. Agent Chat (far right sidebar or panel)
+  
+  // Composer/Claude Code panel location
+  // Note: You may need to manually drag Composer to the right sidebar after opening
+  // Right-click Composer panel → "Move to Secondary Sidebar" or drag to right edge
+  "cursor.composer.panelLocation": "side",
+  
+  // Files opened from Composer will follow the same rules as regular file opens
+  // (won't overwrite existing editors, will open to the right)
+  
+  // ============================================
+  // CURSOR AGENT CHAT SETTINGS
+  // ============================================
+  
+  // Agent chat panel stays on far right
+  // This is typically in the right sidebar or as a secondary panel
+  // In Cursor: Right-click Agent Chat → Move to Secondary Sidebar or drag to right edge
+  "cursor.chat.panelLocation": "side",
+  
+  // ============================================
+  // STARTUP BEHAVIOR
+  // ============================================
+  
+  // Don't auto-open files on startup
+  "workbench.startupEditor": "none"
+}

@@ -16,7 +16,8 @@ import {
   Zap,
   Coins,
   User,
-  LogOut
+  LogOut,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
@@ -44,7 +45,8 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/dashboard/student/chat' },
+    { icon: MessageSquare, label: 'Videos', href: '/dashboard/student/chat' },
+    { icon: DollarSign, label: 'Usage', href: '/dashboard/usage' },
     { icon: BarChart, label: 'Creator', href: '/dashboard/creator/videos' },
   ];
 
@@ -69,13 +71,13 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
           {/* Logo and Brand */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                 <Image
-                  src="/images/logo_brand/chronos_icon_grn.png"
+                  src="/images/logo_brand/chronos_icon_256.png"
                   alt="Chronos AI"
                   width={40}
                   height={40}
-                  className="rounded-lg"
+                  className="rounded-xl object-contain"
                 />
               </div>
               <div className="hidden sm:block">
@@ -92,14 +94,18 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all border-2',
+                      'relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105',
                       isActive
-                        ? 'border-[#827261] bg-[#827261]/10 text-text-primary'
-                        : 'border-[#827261] text-text-secondary hover:bg-[#827261]/5 hover:text-text-primary'
+                        ? 'border border-accent-orange/60 bg-gradient-to-br from-accent-orange/15 to-accent-yellow/10 text-text-primary shadow-lg shadow-accent-orange/20 backdrop-blur-sm'
+                        : 'border border-accent-orange/30 bg-bg-card/50 backdrop-blur-sm text-text-secondary hover:border-accent-orange/50 hover:bg-gradient-to-br hover:from-accent-orange/10 hover:to-accent-yellow/5 hover:text-text-primary hover:shadow-md hover:shadow-accent-orange/10'
                     )}
                   >
                     <item.icon size={18} />
                     <span>{item.label}</span>
+                    {/* Holographic shine effect */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-xl pointer-events-none" />
+                    )}
                   </Link>
                 );
               })}
@@ -113,7 +119,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                 {/* XP Display */}
                 <Link
                   href="/dashboard/achievements"
-                  className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card hover:bg-bg-hover transition-colors"
+                  className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-accent-yellow/15 to-accent-orange/10 backdrop-blur-sm border border-accent-orange/30 hover:border-accent-orange/50 hover:shadow-md hover:shadow-accent-yellow/20 transition-all duration-300 transform hover:scale-105"
                 >
                   <Zap size={18} className="text-accent-yellow" />
                   <span className="text-sm font-semibold">{user.xp} XP</span>
@@ -144,8 +150,8 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                         className="fixed inset-0 z-10"
                         onClick={() => setShowUserMenu(false)}
                       />
-                      <div className="absolute right-0 mt-2 w-48 bg-bg-card border border-border-default rounded-lg shadow-lg z-20 overflow-hidden">
-                        <div className="px-4 py-3 border-b border-border-default">
+                      <div className="absolute right-0 mt-2 w-48 bg-bg-card/95 backdrop-blur-md border border-accent-orange/30 rounded-xl shadow-lg shadow-accent-orange/10 z-20 overflow-hidden">
+                        <div className="px-4 py-3 border-b border-accent-orange/20 bg-gradient-to-br from-accent-orange/10 to-accent-yellow/5">
                           <p className="text-sm font-semibold text-text-primary">{user.name}</p>
                           <p className="text-xs text-text-muted">
                             Level {user.level || Math.floor(user.xp / 100)}
@@ -153,7 +159,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                         </div>
                         <Link
                           href="/dashboard/profile"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-gradient-to-br hover:from-accent-orange/10 hover:to-accent-yellow/5 hover:text-text-primary transition-all duration-200"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <User size={16} />
@@ -164,7 +170,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                             setShowUserMenu(false);
                             handleLogout();
                           }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors text-left"
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-gradient-to-br hover:from-accent-orange/10 hover:to-accent-yellow/5 hover:text-text-primary transition-all duration-200 text-left"
                         >
                           <LogOut size={16} />
                           Logout
@@ -178,7 +184,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
               /* Sign In Button for Unauthenticated Users */
               <Link
                 href="/api/whop/auth/login"
-                className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:opacity-90 transition-all font-medium shadow-md text-sm"
+                className="px-4 py-2 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all duration-300 font-medium shadow-lg shadow-accent-orange/30 text-sm transform hover:scale-105 border border-accent-orange/40"
               >
                 Sign In with Whop
               </Link>
@@ -198,7 +204,7 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
         {/* Mobile Navigation Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border-default py-4">
-            <div className="flex flex-col space-y-1">
+            <div className="flex flex-col space-y-2">
               {menuItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -207,14 +213,17 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300',
                       isActive
-                        ? 'bg-bg-hover text-accent-cyan'
-                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                        ? 'border border-accent-orange/60 bg-gradient-to-br from-accent-orange/15 to-accent-yellow/10 text-text-primary shadow-lg shadow-accent-orange/20 backdrop-blur-sm'
+                        : 'border border-accent-orange/30 bg-bg-card/50 backdrop-blur-sm text-text-secondary hover:border-accent-orange/50 hover:bg-gradient-to-br hover:from-accent-orange/10 hover:to-accent-yellow/5 hover:text-text-primary'
                     )}
                   >
                     <item.icon size={20} />
                     <span className="font-medium">{item.label}</span>
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-xl pointer-events-none" />
+                    )}
                   </Link>
                 );
               })}
@@ -226,11 +235,11 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
                 <Link
                   href="/dashboard/achievements"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-bg-card"
+                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-br from-accent-yellow/15 to-accent-orange/10 backdrop-blur-sm border border-accent-orange/30 hover:border-accent-orange/50 hover:shadow-md hover:shadow-accent-yellow/20 transition-all duration-300"
                 >
                   <div className="flex items-center gap-2">
                     <Zap size={18} className="text-accent-yellow" />
-                    <span className="text-sm">XP</span>
+                    <span className="text-sm font-medium">XP</span>
                   </div>
                   <span className="text-sm font-semibold">{user.xp}</span>
                 </Link>

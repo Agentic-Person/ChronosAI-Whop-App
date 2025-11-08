@@ -295,7 +295,7 @@ export default function CreatorDashboardPage() {
         transition={{ duration: 0.3, delay: 0.2 }}
       >
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <QuickActionCard
             title="Upload Videos"
             description="Add new course content and expand your library"
@@ -307,12 +307,6 @@ export default function CreatorDashboardPage() {
             description="Track student engagement and course performance"
             icon={BarChart3}
             href="/dashboard/creator/analytics"
-          />
-          <QuickActionCard
-            title="Manage Videos"
-            description="Organize and edit your video library"
-            icon={FolderOpen}
-            href="/dashboard/creator/videos"
           />
         </div>
       </motion.div>

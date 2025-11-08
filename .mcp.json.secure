@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+      }
+    },
+    "github": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "whop": {
+      "command": "node",
+      "args": [
+        "--import",
+        "tsx/esm",
+        "C:\\Users\\jimmy\\.mcp\\servers\\whop\\index.ts"
+      ],
+      "env": {
+        "WHOP_API_KEY": "${WHOP_API_KEY}",
+        "WHOP_APP_ID": "${WHOP_APP_ID}"
+      }
+    },
+    "desktop-commander": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "@wonderwhy-er/desktop-commander@latest"
+      ]
+    },
+    "n8n-mcp": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\jimmy\\n8n-mcp\\dist\\mcp\\index.js"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "error",
+        "MCP_MODE": "stdio",
+        "DISABLE_CONSOLE_OUTPUT": "true"
+      }
+    }
+  }
+}

@@ -1,45 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
-// Helper function to get authenticated creator ID
-async function getAuthenticatedCreatorId(req: NextRequest): Promise<{ creatorId?: string; error?: NextResponse }> {
-  // DEV MODE: Bypass auth for development
-  if (process.env.NODE_ENV === 'development') {
-    const { searchParams } = new URL(req.url);
-    const devCreatorId = searchParams.get('creatorId') || '00000000-0000-0000-0000-000000000001';
-    return { creatorId: devCreatorId };
-  }
-
-  const supabase = createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return {
-      error: NextResponse.json(
-        { error: 'Unauthorized', message: 'Authentication required' },
-        { status: 401 }
-      )
-    };
-  }
-
-  // Get creator record from whop_user_id
-  const { data: creator, error: creatorError } = await supabase
-    .from('creators')
-    .select('id')
-    .eq('whop_user_id', user.id)
-    .single();
-
-  if (creatorError || !creator) {
-    return {
-      error: NextResponse.json(
-        { error: 'Unauthorized', message: 'Creator account not found' },
-        { status: 403 }
-      )
-    };
-  }
-
-  return { creatorId: creator.id };
-}
+import { getAuthenticatedCreatorDev } from '@/lib/whop/middleware';
 
 
 /**
@@ -48,17 +9,22 @@ async function getAuthenticatedCreatorId(req: NextRequest): Promise<{ creatorId?
  */
 export async function GET(req: NextRequest) {
   try {
-    // PRODUCTION: Get creator ID from authenticated session
-    const auth = await getAuthenticatedCreatorId(req);
-    if (auth.error) return auth.error;
-    const creatorId = auth.creatorId!;
+    // Get authenticated creator from Whop session
+    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    if (authError) return authError;
+    if (!creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
 
     const supabase = createAdminClient();
 
     const { data: courses, error } = await supabase
       .from('courses')
       .select('*')
-      .eq('creator_id', creatorId)
+      .eq('creator_id', creator.creatorId)
       .order('order_index', { ascending: true });
 
     if (error) throw error;
@@ -81,11 +47,16 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { title, description, thumbnailUrl } = body;
-    
-    // PRODUCTION: Get creator ID from authenticated session
-    const auth = await getAuthenticatedCreatorId(req);
-    if (auth.error) return auth.error;
-    const creatorId = auth.creatorId!;
+
+    // Get authenticated creator from Whop session
+    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    if (authError) return authError;
+    if (!creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
 
     if (!title) {
       return NextResponse.json(
@@ -100,7 +71,7 @@ export async function POST(req: NextRequest) {
     const { data: existingCourses } = await supabase
       .from('courses')
       .select('order_index')
-      .eq('creator_id', creatorId)
+      .eq('creator_id', creator.creatorId)
       .order('order_index', { ascending: false })
       .limit(1);
 
@@ -113,7 +84,7 @@ export async function POST(req: NextRequest) {
       .insert({
         title,
         description: description || '',
-        creator_id: creatorId,
+        creator_id: creator.creatorId,
         thumbnail_url: thumbnailUrl,
         order_index: nextOrderIndex,
         is_active: true
@@ -142,6 +113,16 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { id, title, description, thumbnailUrl, isActive, orderIndex } = body;
 
+    // Get authenticated creator from Whop session
+    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    if (authError) return authError;
+    if (!creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     if (!id) {
       return NextResponse.json(
         { error: 'Course ID is required' },
@@ -150,6 +131,20 @@ export async function PUT(req: NextRequest) {
     }
 
     const supabase = createAdminClient();
+
+    // Verify course belongs to creator
+    const { data: existingCourse } = await supabase
+      .from('courses')
+      .select('creator_id')
+      .eq('id', id)
+      .single();
+
+    if (!existingCourse || existingCourse.creator_id !== creator.creatorId) {
+      return NextResponse.json(
+        { error: 'Forbidden', message: 'Course not found or access denied' },
+        { status: 403 }
+      );
+    }
 
     const updateData: any = {
       updated_at: new Date().toISOString()
@@ -189,6 +184,16 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const courseId = searchParams.get('id');
 
+    // Get authenticated creator from Whop session
+    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    if (authError) return authError;
+    if (!creator) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     if (!courseId) {
       return NextResponse.json(
         { error: 'Course ID is required' },
@@ -197,6 +202,20 @@ export async function DELETE(req: NextRequest) {
     }
 
     const supabase = createAdminClient();
+
+    // Verify course belongs to creator
+    const { data: existingCourse } = await supabase
+      .from('courses')
+      .select('creator_id')
+      .eq('id', courseId)
+      .single();
+
+    if (!existingCourse || existingCourse.creator_id !== creator.creatorId) {
+      return NextResponse.json(
+        { error: 'Forbidden', message: 'Course not found or access denied' },
+        { status: 403 }
+      );
+    }
 
     // Check if course has videos
     const { data: videos, error: videoError } = await supabase
