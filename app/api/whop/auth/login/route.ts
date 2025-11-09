@@ -22,22 +22,38 @@ export async function GET(req: NextRequest) {
       throw new Error('Missing Whop OAuth redirect URI');
     }
 
+    console.log('🔑 [OAuth Login] Starting OAuth flow:', {
+      requestUrl: req.url,
+      redirectUri: WHOP_OAUTH_REDIRECT_URI,
+    });
+
     // Use Whop SDK to get authorization URL
     const { url, state } = whopApi.oauth.getAuthorizationUrl({
       redirectUri: WHOP_OAUTH_REDIRECT_URI,
       scope: ['read_user'],
     });
 
+    // Determine cookie settings based on environment
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHttps = req.url.startsWith('https://');
+
+    console.log('🍪 [OAuth Login] Setting state cookie:', {
+      state: state.substring(0, 10) + '...',
+      willUseSecure: isProduction || isHttps,
+      willUseSameSite: (isProduction || isHttps) ? 'none' : 'lax',
+    });
+
     // Store state in cookie for verification
     const response = NextResponse.redirect(url);
     response.cookies.set('whop_oauth_state', state, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction || isHttps, // Match callback cookie settings
+      sameSite: (isProduction || isHttps) ? 'none' : 'lax', // 'none' needed for cross-site OAuth
       maxAge: 600, // 10 minutes
       path: '/',
     });
 
+    console.log('✅ [OAuth Login] Redirecting to Whop OAuth');
     return response;
   } catch (error) {
     console.error('Whop OAuth login error:', error);

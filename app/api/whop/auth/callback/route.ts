@@ -27,9 +27,16 @@ export async function GET(req: NextRequest) {
     const state = searchParams.get('state');
     const error = searchParams.get('error');
 
+    console.log('🔙 [OAuth Callback] Received callback:', {
+      hasCode: !!code,
+      hasState: !!state,
+      hasError: !!error,
+      requestUrl: req.url,
+    });
+
     // Check for OAuth errors
     if (error) {
-      console.error('Whop OAuth error:', error);
+      console.error('❌ [OAuth Callback] Whop OAuth error:', error);
       return NextResponse.redirect(
         new URL(`/?error=${error}`, req.url)
       );
@@ -37,12 +44,23 @@ export async function GET(req: NextRequest) {
 
     // Validate state (CSRF protection)
     const storedState = req.cookies.get('whop_oauth_state')?.value;
+    const allCookies = req.cookies.getAll().map(c => c.name);
+
+    console.log('🍪 [OAuth Callback] State validation:', {
+      receivedState: state?.substring(0, 10) + '...',
+      storedState: storedState?.substring(0, 10) + '...',
+      statesMatch: state === storedState,
+      allCookies,
+    });
+
     if (!state || state !== storedState) {
-      console.error('OAuth state mismatch');
+      console.error('❌ [OAuth Callback] OAuth state mismatch - CSRF protection failed');
       return NextResponse.redirect(
         new URL('/?error=invalid_state', req.url)
       );
     }
+
+    console.log('✅ [OAuth Callback] State validation passed');
 
     if (!code) {
       console.error('Missing OAuth code');
