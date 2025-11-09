@@ -157,13 +157,17 @@ export async function GET(req: NextRequest) {
     // Redirect to dashboard with the access token stored in a cookie
     const response = NextResponse.redirect(new URL('/dashboard', req.url));
 
-    // Store the access token in a secure cookie
-    // sameSite: 'none' required for iframe embedding in Whop
-    // secure: true required when sameSite is 'none'
+    // Determine if we're in production (HTTPS) or development (HTTP)
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHttps = req.url.startsWith('https://');
+
+    // Store the access token in a cookie
+    // In production: use secure: true and sameSite: 'none' for Whop iframe
+    // In development: use secure: false and sameSite: 'lax' for localhost
     response.cookies.set('whop_access_token', access_token, {
       httpOnly: true,
-      secure: true, // Always secure (required for sameSite: 'none')
-      sameSite: 'none', // Allow cross-site cookies for Whop iframe
+      secure: isProduction || isHttps, // Only secure in production or HTTPS
+      sameSite: (isProduction || isHttps) ? 'none' : 'lax', // 'none' for Whop iframe, 'lax' for dev
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
@@ -171,8 +175,8 @@ export async function GET(req: NextRequest) {
     // Store whop user ID for quick lookups (not sensitive)
     response.cookies.set('whop_user_id', whopUser.id, {
       httpOnly: true,
-      secure: true, // Always secure (required for sameSite: 'none')
-      sameSite: 'none', // Allow cross-site cookies for Whop iframe
+      secure: isProduction || isHttps,
+      sameSite: (isProduction || isHttps) ? 'none' : 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });

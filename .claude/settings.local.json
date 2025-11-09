@@ -19,7 +19,13 @@
       "Bash(npm run build:*)",
       "mcp__desktop-commander__write_file",
       "Bash(npx tsc:*)",
-      "mcp__whop__list_products"
+      "mcp__whop__list_products",
+      "mcp__desktop-commander__read_file",
+      "mcp__desktop-commander__list_directory",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:frosted-ui.com)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []

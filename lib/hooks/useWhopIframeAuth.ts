@@ -45,9 +45,10 @@ export function useWhopAuth(): UseWhopAuthResult {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Not authenticated - redirect to OAuth login
-          window.location.href = '/api/whop/auth/login';
+          // Not authenticated - just set creator to null, don't auto-redirect
+          // Let the UI handle showing login button
           setCreator(null);
+          setIsLoading(false);
           return;
         }
         throw new Error(`Failed to fetch creator info: ${response.statusText}`);
