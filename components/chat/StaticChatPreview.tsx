@@ -86,9 +86,14 @@ export function StaticChatPreview({ className }: StaticChatPreviewProps) {
     }
   }, []);
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom only when NEW messages are added (not on initial mount)
+  const prevMessageCountRef = useRef(messages.length);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll if messages were actually added (not on initial mount)
+    if (messages.length > prevMessageCountRef.current && messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
 
   const handleSend = async () => {

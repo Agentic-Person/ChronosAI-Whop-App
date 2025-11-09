@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
 import { VideoSummary } from '@/components/video/VideoSummary';
 import { buildYouTubeEmbedUrl } from '@/lib/video/youtube';
-import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
+import { useWhopAuth } from '@/lib/hooks/useWhopAuth';
 
 // Force dynamic rendering (uses authentication hooks)
 export const dynamic = 'force-dynamic';

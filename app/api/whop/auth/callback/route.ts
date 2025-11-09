@@ -2,7 +2,7 @@
  * Whop OAuth Callback Endpoint
  *
  * Handles OAuth redirect and creates user session
- * Uses Whop SDK directly for OAuth (not MCP - MCP is for AI development assistance only)
+ * Based on: https://docs.whop.com/apps/features/oauth-guide
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,10 +18,16 @@ const whopApi = WhopServerSdk({
   appId: process.env.NEXT_PUBLIC_WHOP_APP_ID!,
 });
 
-const WHOP_OAUTH_REDIRECT_URI = process.env.WHOP_OAUTH_REDIRECT_URI!;
-
 export async function GET(req: NextRequest) {
   try {
+    // Always build redirect URI dynamically from request URL (ignores env var for local dev)
+    const requestUrl = new URL(req.url);
+    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+    // Force localhost:3008 for local development, use env var only in production
+    const redirectUri = process.env.NODE_ENV === 'production' 
+      ? (process.env.WHOP_OAUTH_REDIRECT_URI || `${baseUrl}/api/whop/auth/callback`)
+      : `${baseUrl}/api/whop/auth/callback`;
+
     const searchParams = req.nextUrl.searchParams;
     const code = searchParams.get('code');
     const state = searchParams.get('state');
@@ -32,6 +38,8 @@ export async function GET(req: NextRequest) {
       hasState: !!state,
       hasError: !!error,
       requestUrl: req.url,
+      redirectUri: redirectUri,
+      nodeEnv: process.env.NODE_ENV,
     });
 
     // Check for OAuth errors
@@ -75,7 +83,7 @@ export async function GET(req: NextRequest) {
     // Exchange the authorization code for an access token using Whop SDK
     const authResponse = await whopApi.oauth.exchangeCode({
       code,
-      redirectUri: WHOP_OAUTH_REDIRECT_URI,
+      redirectUri: redirectUri,
     });
 
     if (!authResponse.ok) {
@@ -83,128 +91,43 @@ export async function GET(req: NextRequest) {
       throw new Error(`Failed to exchange code for token: ${authResponse.error?.message || 'Unknown error'}`);
     }
 
-    const { access_token } = authResponse.tokens;
+    const { access_token, user } = authResponse.tokens;
 
-    if (!access_token) {
-      console.error('No access token in response');
-      throw new Error('No access token received');
-    }
-
-    console.log('Whop OAuth successful, access token received');
-
-    // Get user info from Whop
-    const userResponse = await whopApi.users.getCurrentUser({
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
+    console.log('✅ [OAuth Callback] Token exchange successful:', {
+      hasAccessToken: !!access_token,
+      userId: user?.id,
+      email: user?.email,
     });
 
-    if (!userResponse.ok) {
-      console.error('Failed to get user info:', userResponse.error);
-      throw new Error('Failed to get user information');
-    }
-
-    const whopUser = userResponse.user;
-    console.log('Whop user info retrieved:', whopUser.id);
-
-    // Get user's memberships to determine plan
-    const membershipsResponse = await whopApi.memberships.listMemberships({
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
-
-    const memberships = membershipsResponse.ok ? membershipsResponse.memberships : [];
-    const activeMembership = memberships.find(
-      (m: any) => m.valid && m.status === 'active'
-    );
-
-    // Extract plan tier
-    const extractPlanTier = (membership: any): string => {
-      const plan = membership.plan || {};
-      const planName = (plan.name || '').toLowerCase();
-      if (planName.includes('enterprise')) return 'enterprise';
-      if (planName.includes('pro') || planName.includes('professional')) return 'pro';
-      if (planName.includes('basic') || planName.includes('starter')) return 'basic';
-      return 'basic';
-    };
-
-    const planTier = activeMembership ? extractPlanTier(activeMembership) : 'basic';
-
-    // Create or update creator in database
-    const supabase = createClient();
-
-    const creatorData = {
-      whop_user_id: whopUser.id,
-      email: whopUser.email || '',
-      company_name: whopUser.username || 'New Creator',
-      current_plan: planTier,
-      membership_id: activeMembership?.id,
-      membership_valid: !!activeMembership?.valid,
-      subscription_tier: planTier,
-      settings: {},
-      updated_at: new Date().toISOString(),
-    };
-
-    // Check if creator exists
-    const { data: existingCreator } = await supabase
+    // Create or update creator record in database
+    const supabase = await createClient();
+    const { data: creator, error: creatorError } = await supabase
       .from('creators')
-      .select('id')
-      .eq('whop_user_id', whopUser.id)
+      .upsert({
+        whop_user_id: user.id,
+        email: user.email || null,
+        name: user.username || user.email || 'Unknown',
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'whop_user_id',
+      })
+      .select()
       .single();
 
-    if (existingCreator) {
-      // Update existing creator
-      await supabase
-        .from('creators')
-        .update(creatorData)
-        .eq('whop_user_id', whopUser.id);
-      console.log('Updated existing creator:', existingCreator.id);
+    if (creatorError) {
+      console.error('❌ [OAuth Callback] Failed to create/update creator:', creatorError);
+      // Don't fail the OAuth flow - just log the error
     } else {
-      // Create new creator
-      const { data: newCreator, error: createError } = await supabase
-        .from('creators')
-        .insert(creatorData)
-        .select('id')
-        .single();
-
-      if (createError) {
-        console.error('Failed to create creator:', createError);
-        throw new Error('Failed to create user account');
-      }
-      console.log('Created new creator:', newCreator?.id);
+      console.log('✅ [OAuth Callback] Creator record created/updated:', creator?.id);
     }
 
-    // Redirect to dashboard with the access token stored in a cookie
-    const response = NextResponse.redirect(new URL('/dashboard', req.url));
-
-    // Determine if we're in production (HTTPS) or development (HTTP)
+    // Determine cookie settings based on environment
     const isProduction = process.env.NODE_ENV === 'production';
     const isHttps = req.url.startsWith('https://');
 
-    console.log('🍪 [OAuth Callback] Cookie Settings:', {
-      url: req.url,
-      isProduction,
-      isHttps,
-      willUseSecure: isProduction || isHttps,
-      willUseSameSite: (isProduction || isHttps) ? 'none' : 'lax',
-      accessTokenLength: access_token.length,
-      whopUserId: whopUser.id,
-    });
-
-    // Store the access token in a cookie
-    // In production: use secure: true and sameSite: 'none' for Whop iframe
-    // In development: use secure: false and sameSite: 'lax' for localhost
+    // Set access token in secure cookie
+    const response = NextResponse.redirect(new URL('/dashboard', req.url));
     response.cookies.set('whop_access_token', access_token, {
-      httpOnly: true,
-      secure: isProduction || isHttps, // Only secure in production or HTTPS
-      sameSite: (isProduction || isHttps) ? 'none' : 'lax', // 'none' for Whop iframe, 'lax' for dev
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
-    // Store whop user ID for quick lookups (not sensitive)
-    response.cookies.set('whop_user_id', whopUser.id, {
       httpOnly: true,
       secure: isProduction || isHttps,
       sameSite: (isProduction || isHttps) ? 'none' : 'lax',
@@ -212,23 +135,26 @@ export async function GET(req: NextRequest) {
       path: '/',
     });
 
-    console.log('✅ [OAuth Callback] Cookies set, redirecting to /dashboard');
+    // Also set user ID for convenience
+    if (user.id) {
+      response.cookies.set('whop_user_id', user.id, {
+        httpOnly: true,
+        secure: isProduction || isHttps,
+        sameSite: (isProduction || isHttps) ? 'none' : 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      });
+    }
 
     // Clear the OAuth state cookie
     response.cookies.delete('whop_oauth_state');
 
-    console.log('OAuth callback complete, redirecting to dashboard');
+    console.log('✅ [OAuth Callback] Redirecting to dashboard');
     return response;
-
   } catch (error) {
-    console.error('Whop OAuth callback error:', error);
+    console.error('❌ [OAuth Callback] Error:', error);
     return NextResponse.redirect(
-      new URL(
-        `/?error=${encodeURIComponent(
-          error instanceof Error ? error.message : 'oauth_failed'
-        )}`,
-        req.url
-      )
+      new URL('/?error=oauth_failed', req.url)
     );
   }
 }

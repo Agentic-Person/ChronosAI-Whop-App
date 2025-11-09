@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getAuthenticatedCreatorDev } from '@/lib/whop/middleware';
+import { getAuthenticatedCreator } from '@/lib/whop/middleware';
 
 /**
  * PATCH /api/videos/[id]
@@ -21,7 +21,7 @@ export async function PATCH(
     const body = await req.json();
 
     // Get authenticated creator
-    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    const { creator, error: authError } = await getAuthenticatedCreator(req);
     if (authError) return authError;
     if (!creator) {
       return NextResponse.json(
@@ -99,7 +99,7 @@ export async function DELETE(
     const { id } = params;
 
     // Get authenticated creator
-    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    const { creator, error: authError } = await getAuthenticatedCreator(req);
     if (authError) return authError;
     if (!creator) {
       return NextResponse.json(

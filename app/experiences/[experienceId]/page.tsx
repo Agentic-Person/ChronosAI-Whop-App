@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Play, Clock, Zap, TrendingUp, Moon } from 'lucide-react';
 import { StaticChatPreview } from '@/components/chat/StaticChatPreview';
-import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
+import { useWhopAuth } from '@/lib/hooks/useWhopAuth';
 
 export default function ExperiencePage({
   params,

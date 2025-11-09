@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
+import { useWhopAuth } from '@/lib/hooks/useWhopAuth';
 
 interface Course {
   id: string;

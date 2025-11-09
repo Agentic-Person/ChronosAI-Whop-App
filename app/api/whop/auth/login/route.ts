@@ -2,7 +2,7 @@
  * Whop OAuth Login Endpoint
  *
  * Initiates OAuth 2.0 flow with Whop using SDK
- * Agent: Agent 14 (Whop Integration Specialist)
+ * Based on: https://docs.whop.com/apps/features/oauth-guide
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,20 +16,23 @@ const whopApi = WhopServerSdk({
 
 export async function GET(req: NextRequest) {
   try {
-    const WHOP_OAUTH_REDIRECT_URI = process.env.WHOP_OAUTH_REDIRECT_URI;
-
-    if (!WHOP_OAUTH_REDIRECT_URI) {
-      throw new Error('Missing Whop OAuth redirect URI');
-    }
+    // Always build redirect URI dynamically from request URL (ignores env var for local dev)
+    const requestUrl = new URL(req.url);
+    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+    // Force localhost:3008 for local development, use env var only in production
+    const redirectUri = process.env.NODE_ENV === 'production' 
+      ? (process.env.WHOP_OAUTH_REDIRECT_URI || `${baseUrl}/api/whop/auth/callback`)
+      : `${baseUrl}/api/whop/auth/callback`;
 
     console.log('🔑 [OAuth Login] Starting OAuth flow:', {
       requestUrl: req.url,
-      redirectUri: WHOP_OAUTH_REDIRECT_URI,
+      redirectUri: redirectUri,
+      nodeEnv: process.env.NODE_ENV,
     });
 
     // Use Whop SDK to get authorization URL
     const { url, state } = whopApi.oauth.getAuthorizationUrl({
-      redirectUri: WHOP_OAUTH_REDIRECT_URI,
+      redirectUri: redirectUri,
       scope: ['read_user'],
     });
 

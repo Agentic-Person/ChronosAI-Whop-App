@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "whop-proxy --command 'next dev'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -111,6 +111,8 @@
     "@types/react-big-calendar": "^1.8.12",
     "@types/react-dom": "^18",
     "@types/three": "^0.170.0",
+    "@whop-apps/dev-proxy": "^0.0.1-canary.117",
+    "@whop/sdk": "^0.0.3",
     "artillery": "^2.0.26",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",

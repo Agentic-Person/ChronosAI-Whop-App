@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getAuthenticatedCreatorDev } from '@/lib/whop/middleware';
+import { getAuthenticatedCreator } from '@/lib/whop/middleware';
 
 
 /**
@@ -10,7 +10,7 @@ import { getAuthenticatedCreatorDev } from '@/lib/whop/middleware';
 export async function GET(req: NextRequest) {
   try {
     // Get authenticated creator from Whop session
-    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    const { creator, error: authError } = await getAuthenticatedCreator(req);
     if (authError) return authError;
     if (!creator) {
       return NextResponse.json(
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const { title, description, thumbnailUrl } = body;
 
     // Get authenticated creator from Whop session
-    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    const { creator, error: authError } = await getAuthenticatedCreator(req);
     if (authError) return authError;
     if (!creator) {
       return NextResponse.json(
@@ -114,7 +114,7 @@ export async function PUT(req: NextRequest) {
     const { id, title, description, thumbnailUrl, isActive, orderIndex } = body;
 
     // Get authenticated creator from Whop session
-    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    const { creator, error: authError } = await getAuthenticatedCreator(req);
     if (authError) return authError;
     if (!creator) {
       return NextResponse.json(
@@ -185,7 +185,7 @@ export async function DELETE(req: NextRequest) {
     const courseId = searchParams.get('id');
 
     // Get authenticated creator from Whop session
-    const { creator, error: authError } = await getAuthenticatedCreatorDev(req);
+    const { creator, error: authError } = await getAuthenticatedCreator(req);
     if (authError) return authError;
     if (!creator) {
       return NextResponse.json(
