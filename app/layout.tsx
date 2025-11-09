@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { ConditionalNavigation } from "@/components/layout/ConditionalNavigation";
-import { WhopIframeProvider } from "@/components/providers/WhopIframeProvider";
+import { ClientProviders } from "@/components/providers/ClientProviders";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,14 +29,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-bg-app text-text-primary antialiased min-h-screen`}>
-        {/* Whop Iframe SDK Provider - handles authentication when embedded in Whop */}
-        <WhopIframeProvider>
+        <ClientProviders>
           {/* Global Navigation - appears on all pages except landing */}
           <ConditionalNavigation user={user} />
 
           {children}
           <Toaster position="top-right" />
-        </WhopIframeProvider>
+        </ClientProviders>
       </body>
     </html>
   );

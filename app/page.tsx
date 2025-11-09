@@ -30,8 +30,9 @@ export default function LandingPage() {
       console.log('[Landing] ✅ Authenticated - redirecting to dashboard');
       router.push('/dashboard');
     } else if (!isLoading && isInIframe && !creator) {
-      console.log('[Landing] 🔄 In iframe but not auth - redirecting to login');
-      window.location.href = '/api/whop/auth/login';
+      // In iframe but not authenticated - Whop SDK should handle this
+      console.log('[Landing] ⚠️ In iframe but no user from Whop SDK - this should not happen');
+      // Don't redirect to OAuth - let Whop handle authentication in iframe context
     } else {
       console.log('[Landing] ⏳ Not redirecting yet');
     }

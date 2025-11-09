@@ -27,11 +27,11 @@ interface UseWhopAuthResult {
 /**
  * Unified authentication hook
  *
- * Uses OAuth cookies for both iframe and standalone contexts.
- * The sameSite: 'none' cookie setting allows this to work in Whop's iframe.
+ * When in Whop iframe: Uses @whop/react SDK user (provided by WhopIframeProvider)
+ * When standalone: Uses OAuth cookies via /api/auth/me endpoint
  */
 export function useWhopAuth(): UseWhopAuthResult {
-  const { isInIframe } = useWhopIframe();
+  const { user: iframeUser, isLoading: iframeLoading, isInIframe, isAuthenticated } = useWhopIframe();
   const [creator, setCreator] = useState<CreatorInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -45,12 +45,8 @@ export function useWhopAuth(): UseWhopAuthResult {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Not authenticated
-          // In iframe, Whop should handle this
-          // In standalone, redirect to login
-          if (!isInIframe) {
-            window.location.href = '/api/whop/auth/login';
-          }
+          // Not authenticated - redirect to OAuth login
+          window.location.href = '/api/whop/auth/login';
           setCreator(null);
           return;
         }
@@ -68,12 +64,35 @@ export function useWhopAuth(): UseWhopAuthResult {
   };
 
   useEffect(() => {
-    fetchCreator();
-  }, []);
+    // If in iframe and user is loaded from SDK
+    if (isInIframe && !iframeLoading) {
+      if (iframeUser) {
+        // Use iframe SDK user - create creator object
+        console.log('[useWhopAuth] Using iframe SDK user:', iframeUser.id);
+        setCreator({
+          creatorId: iframeUser.id, // Use Whop user ID as creator ID
+          whopUserId: iframeUser.id,
+          email: iframeUser.email || '',
+          membershipValid: isAuthenticated,
+          currentPlan: 'basic', // Default plan for iframe users
+        });
+        setIsLoading(false);
+      } else {
+        // In iframe but no user - should not happen (Whop handles auth)
+        console.log('[useWhopAuth] In iframe but no user from SDK');
+        setCreator(null);
+        setIsLoading(false);
+      }
+    } else if (!isInIframe) {
+      // Not in iframe - use OAuth API
+      console.log('[useWhopAuth] Standalone mode - using OAuth API');
+      fetchCreator();
+    }
+  }, [isInIframe, iframeUser, iframeLoading, isAuthenticated]);
 
   return {
     creator,
-    isLoading,
+    isLoading: isInIframe ? iframeLoading : isLoading,
     error,
     refetch: fetchCreator,
     isInIframe,

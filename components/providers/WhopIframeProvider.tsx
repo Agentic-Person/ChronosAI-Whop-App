@@ -1,13 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useIframeSdk } from '@whop/react';
 
 /**
  * Whop Iframe SDK Context
  *
  * This provider wraps the app and provides authenticated user info
- * when embedded in Whop. For iframe contexts, authentication is
- * handled automatically by Whop. For standalone, uses OAuth cookies.
+ * when embedded in Whop using the @whop/react SDK.
  */
 
 export interface WhopIframeUser {
@@ -43,38 +43,69 @@ export function useWhopIframe() {
 
 export function WhopIframeProvider({ children }: { children: React.ReactNode }) {
   const [isInIframe, setIsInIframe] = useState(false);
-  const [iframeSdk, setIframeSdk] = useState<any>(null);
+  const [user, setUser] = useState<WhopIframeUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Detect if we're in an iframe
+  // Always call hook unconditionally (required by Rules of Hooks)
+  // The hook itself handles SSR gracefully and returns null during server-side rendering
+  let sdk = null;
+  try {
+    sdk = useIframeSdk();
+  } catch (error) {
+    // SDK not available (SSR or not in iframe)
+    // This is expected during SSR, no need to log
+  }
+
+  // Detect if we're in an iframe and mark as mounted
   useEffect(() => {
+    setIsMounted(true);
     const inIframe = typeof window !== 'undefined' && window.self !== window.top;
     setIsInIframe(inIframe);
-
-    // Dynamically load Whop iframe SDK only if in iframe
-    if (inIframe) {
-      import('@whop/react').then((whopModule) => {
-        // Initialize SDK provider context
-        setIframeSdk(whopModule);
-        setIsLoading(false);
-      }).catch((error) => {
-        console.error('Failed to load Whop iframe SDK:', error);
-        setIsLoading(false);
-      });
-    } else {
-      setIsLoading(false);
-    }
+    console.log('[WhopIframe] Detected iframe:', inIframe);
   }, []);
 
-  // Extract user info from iframe SDK if available
-  const user: WhopIframeUser | null = null; // Will be populated by useWhopAuth hook
+  // Get user from SDK when available
+  useEffect(() => {
+    async function fetchUser() {
+      if (!sdk || !isInIframe) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log('[WhopIframe] SDK available, checking for user');
+
+        // Access SDK user property or method (SDK structure depends on Whop's implementation)
+        // Try different possible patterns
+        const sdkUser = (sdk as any).user || (typeof (sdk as any).getUser === 'function' ? await (sdk as any).getUser() : null);
+
+        console.log('[WhopIframe] SDK user:', sdkUser);
+
+        if (sdkUser) {
+          setUser({
+            id: sdkUser.id,
+            email: sdkUser.email || null,
+            username: sdkUser.username || null,
+            profilePictureUrl: sdkUser.profile_picture_url || sdkUser.profilePictureUrl || null,
+          });
+        }
+      } catch (error) {
+        console.error('[WhopIframe] Error getting user from SDK:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchUser();
+  }, [sdk, isInIframe]);
 
   const contextValue: WhopIframeContextValue = {
     user,
     isLoading,
-    isAuthenticated: false,
+    isAuthenticated: !!user,
     isInIframe,
-    hasAccess: false,
+    hasAccess: !!user,
   };
 
   return (
