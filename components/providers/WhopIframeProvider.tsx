@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useIframeSdk } from '@whop/react';
 
 /**
  * Whop Iframe SDK Context
@@ -45,24 +44,47 @@ export function WhopIframeProvider({ children }: { children: React.ReactNode }) 
   const [isInIframe, setIsInIframe] = useState(false);
   const [user, setUser] = useState<WhopIframeUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
 
-  // Always call hook unconditionally (required by Rules of Hooks)
-  // The hook itself handles SSR gracefully and returns null during server-side rendering
-  let sdk = null;
-  try {
-    sdk = useIframeSdk();
-  } catch (error) {
-    // SDK not available (SSR or not in iframe)
-    // This is expected during SSR, no need to log
-  }
-
-  // Detect if we're in an iframe and mark as mounted
+  // Detect if we're in an iframe and get user from Whop SDK
   useEffect(() => {
-    setIsMounted(true);
     const inIframe = typeof window !== 'undefined' && window.self !== window.top;
     setIsInIframe(inIframe);
     console.log('[WhopIframe] Detected iframe:', inIframe);
+
+    // Access Whop SDK from window object (injected by Whop when in iframe)
+    if (inIframe && typeof window !== 'undefined') {
+      const checkWhopSdk = () => {
+        // Whop injects SDK into window object
+        const whopSdk = (window as any).Whop;
+        
+        if (whopSdk) {
+          console.log('[WhopIframe] Whop SDK found on window:', whopSdk);
+          
+          // Try to get user from SDK
+          const sdkUser = whopSdk.user || whopSdk.currentUser;
+          
+          if (sdkUser) {
+            console.log('[WhopIframe] User from SDK:', sdkUser);
+            setUser({
+              id: sdkUser.id,
+              email: sdkUser.email || null,
+              username: sdkUser.username || null,
+              profilePictureUrl: sdkUser.profile_picture_url || sdkUser.profilePictureUrl || null,
+            });
+          }
+        } else {
+          console.log('[WhopIframe] Whop SDK not found on window, retrying...');
+          // Retry after a delay
+          setTimeout(checkWhopSdk, 100);
+        }
+        
+        setIsLoading(false);
+      };
+      
+      checkWhopSdk();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   // Get user from SDK when available
