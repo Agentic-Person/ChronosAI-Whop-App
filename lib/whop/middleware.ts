@@ -25,14 +25,140 @@ export interface WhopCreatorContext {
 }
 
 /**
- * Get authenticated creator from Whop session cookie
- * This is the ONLY way to authenticate users in this app
+ * Authenticate using Whop proxy headers (when embedded in Whop)
+ * Whop automatically adds these headers when the app runs through their proxy (*.apps.whop.com)
+ */
+async function authenticateFromWhopHeaders(
+  whopUserId: string,
+  whopMembershipId: string | null,
+  whopCompanyId: string | null
+): Promise<{ creator: WhopCreatorContext | null; error: NextResponse | null }> {
+  try {
+    // Look up creator in database by Whop user ID
+    const supabase = createClient();
+    const { data: creator, error: dbError } = await supabase
+      .from('creators')
+      .select('id, whop_user_id, email, current_plan, membership_id, membership_valid')
+      .eq('whop_user_id', whopUserId)
+      .single();
+
+    if (dbError || !creator) {
+      // Creator doesn't exist yet - create it
+      console.log(`[Auth] Creating new creator for Whop user ${whopUserId}`);
+
+      // Fetch user info from Whop API using app API key
+      const userResponse = await whopApi.users.getUser(whopUserId);
+
+      if (!userResponse.ok) {
+        console.error('[Auth] Failed to fetch Whop user:', userResponse.error);
+        return {
+          creator: null,
+          error: NextResponse.json(
+            { error: 'Unauthorized', message: 'Failed to verify Whop user' },
+            { status: 401 }
+          ),
+        };
+      }
+
+      const whopUser = userResponse.user;
+
+      // Determine plan tier from membership
+      let planTier = 'basic';
+      if (whopMembershipId) {
+        const membershipResponse = await whopApi.memberships.getMembership(whopMembershipId);
+        if (membershipResponse.ok) {
+          planTier = extractPlanTier(membershipResponse.membership);
+        }
+      }
+
+      const newCreatorData = {
+        whop_user_id: whopUserId,
+        email: whopUser.email || '',
+        company_name: whopUser.username || 'New Creator',
+        current_plan: planTier,
+        membership_id: whopMembershipId,
+        membership_valid: !!whopMembershipId,
+        subscription_tier: planTier,
+        settings: {},
+      };
+
+      const { data: newCreator, error: insertError } = await supabase
+        .from('creators')
+        .insert(newCreatorData)
+        .select('id, whop_user_id, email, current_plan, membership_id, membership_valid')
+        .single();
+
+      if (insertError || !newCreator) {
+        console.error('[Auth] Failed to create creator:', insertError);
+        return {
+          creator: null,
+          error: NextResponse.json(
+            { error: 'Internal Server Error', message: 'Failed to create user account' },
+            { status: 500 }
+          ),
+        };
+      }
+
+      return {
+        creator: {
+          creatorId: newCreator.id,
+          whopUserId,
+          email: whopUser.email || '',
+          accessToken: 'proxy_auth', // Not using OAuth in proxy mode
+          membershipId: whopMembershipId || undefined,
+          membershipValid: !!whopMembershipId,
+          currentPlan: planTier,
+        },
+        error: null,
+      };
+    }
+
+    // Return existing creator
+    return {
+      creator: {
+        creatorId: creator.id,
+        whopUserId: creator.whop_user_id,
+        email: creator.email || '',
+        accessToken: 'proxy_auth', // Not using OAuth in proxy mode
+        membershipId: creator.membership_id || undefined,
+        membershipValid: creator.membership_valid,
+        currentPlan: creator.current_plan || 'basic',
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.error('[Auth] Proxy header authentication error:', error);
+    return {
+      creator: null,
+      error: NextResponse.json(
+        { error: 'Internal Server Error', message: 'Authentication failed' },
+        { status: 500 }
+      ),
+    };
+  }
+}
+
+/**
+ * Get authenticated creator from Whop proxy headers or OAuth cookie
+ * Supports both embedded (proxy headers) and standalone (OAuth) contexts
  */
 export async function getAuthenticatedCreator(
   req: NextRequest
 ): Promise<{ creator: WhopCreatorContext | null; error: NextResponse | null }> {
   try {
-    // Get access token from cookie
+    // Check for Whop proxy headers first (when embedded in Whop)
+    const whopUserId = req.headers.get('x-whop-user-id');
+    const whopMembershipId = req.headers.get('x-whop-membership-id');
+    const whopCompanyId = req.headers.get('x-whop-company-id');
+
+    // If running through Whop's proxy (*.apps.whop.com), use headers
+    if (whopUserId) {
+      console.log('[Auth] Using Whop proxy headers for authentication');
+      return await authenticateFromWhopHeaders(whopUserId, whopMembershipId, whopCompanyId);
+    }
+
+    // Otherwise, fall back to OAuth cookie authentication
+    console.log('[Auth] Using OAuth cookie for authentication');
     const accessToken = req.cookies.get('whop_access_token')?.value;
 
     if (!accessToken) {
