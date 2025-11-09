@@ -11,9 +11,22 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    // DEBUG: Log all headers to see what Whop is sending
+    console.log('[/api/auth/me] Request headers:', {
+      'x-whop-user-id': req.headers.get('x-whop-user-id'),
+      'x-whop-membership-id': req.headers.get('x-whop-membership-id'),
+      'x-whop-company-id': req.headers.get('x-whop-company-id'),
+      'x-forwarded-for': req.headers.get('x-forwarded-for'),
+      'user-agent': req.headers.get('user-agent'),
+      'referer': req.headers.get('referer'),
+      'host': req.headers.get('host'),
+      'all-headers': Array.from(req.headers.entries()).map(([k, v]) => `${k}: ${v}`).join(', ')
+    });
+
     const { creator, error } = await getAuthenticatedCreatorDev(req);
 
     if (error) {
+      console.log('[/api/auth/me] Auth error:', error);
       return error;
     }
 
