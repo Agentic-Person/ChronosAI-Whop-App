@@ -161,6 +161,16 @@ export async function GET(req: NextRequest) {
     const isProduction = process.env.NODE_ENV === 'production';
     const isHttps = req.url.startsWith('https://');
 
+    console.log('🍪 [OAuth Callback] Cookie Settings:', {
+      url: req.url,
+      isProduction,
+      isHttps,
+      willUseSecure: isProduction || isHttps,
+      willUseSameSite: (isProduction || isHttps) ? 'none' : 'lax',
+      accessTokenLength: access_token.length,
+      whopUserId: whopUser.id,
+    });
+
     // Store the access token in a cookie
     // In production: use secure: true and sameSite: 'none' for Whop iframe
     // In development: use secure: false and sameSite: 'lax' for localhost
@@ -180,6 +190,8 @@ export async function GET(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+
+    console.log('✅ [OAuth Callback] Cookies set, redirecting to /dashboard');
 
     // Clear the OAuth state cookie
     response.cookies.delete('whop_oauth_state');

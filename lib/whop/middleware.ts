@@ -160,8 +160,17 @@ export async function getAuthenticatedCreator(
     // Otherwise, fall back to OAuth cookie authentication
     console.log('[Auth] Using OAuth cookie for authentication');
     const accessToken = req.cookies.get('whop_access_token')?.value;
+    const whopUserId = req.cookies.get('whop_user_id')?.value;
+
+    console.log('🍪 [Auth] Cookie check:', {
+      hasAccessToken: !!accessToken,
+      hasWhopUserId: !!whopUserId,
+      accessTokenLength: accessToken?.length || 0,
+      allCookies: req.cookies.getAll().map(c => c.name),
+    });
 
     if (!accessToken) {
+      console.log('❌ [Auth] No access token cookie found - returning 401');
       return {
         creator: null,
         error: NextResponse.json(
