@@ -160,11 +160,11 @@ export async function getAuthenticatedCreator(
     // Otherwise, fall back to OAuth cookie authentication
     console.log('[Auth] Using OAuth cookie for authentication');
     const accessToken = req.cookies.get('whop_access_token')?.value;
-    const whopUserId = req.cookies.get('whop_user_id')?.value;
+    const cookieWhopUserId = req.cookies.get('whop_user_id')?.value;
 
     console.log('🍪 [Auth] Cookie check:', {
       hasAccessToken: !!accessToken,
-      hasWhopUserId: !!whopUserId,
+      hasWhopUserId: !!cookieWhopUserId,
       accessTokenLength: accessToken?.length || 0,
       allCookies: req.cookies.getAll().map(c => c.name),
     });
