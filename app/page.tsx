@@ -11,18 +11,29 @@ import { VideoSummary } from '@/components/video/VideoSummary';
 import { buildYouTubeEmbedUrl } from '@/lib/video/youtube';
 import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
 
+// Force dynamic rendering (uses authentication hooks)
+export const dynamic = 'force-dynamic';
+
 export default function LandingPage() {
   const router = useRouter();
   const { creator, isLoading, isInIframe } = useWhopAuth();
 
   // Redirect to dashboard if authenticated (especially when in Whop iframe)
   useEffect(() => {
+    console.log('[Landing] Auth state:', {
+      hasCreator: !!creator,
+      isLoading,
+      isInIframe
+    });
+
     if (!isLoading && creator) {
-      // User is authenticated - redirect to dashboard
+      console.log('[Landing] ✅ Authenticated - redirecting to dashboard');
       router.push('/dashboard');
     } else if (!isLoading && isInIframe && !creator) {
-      // In Whop iframe but not authenticated - try to authenticate
+      console.log('[Landing] 🔄 In iframe but not auth - redirecting to login');
       window.location.href = '/api/whop/auth/login';
+    } else {
+      console.log('[Landing] ⏳ Not redirecting yet');
     }
   }, [creator, isLoading, isInIframe, router]);
 
