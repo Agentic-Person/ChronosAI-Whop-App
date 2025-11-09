@@ -87,41 +87,6 @@ export function WhopIframeProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  // Get user from SDK when available
-  useEffect(() => {
-    async function fetchUser() {
-      if (!sdk || !isInIframe) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        console.log('[WhopIframe] SDK available, checking for user');
-
-        // Access SDK user property or method (SDK structure depends on Whop's implementation)
-        // Try different possible patterns
-        const sdkUser = (sdk as any).user || (typeof (sdk as any).getUser === 'function' ? await (sdk as any).getUser() : null);
-
-        console.log('[WhopIframe] SDK user:', sdkUser);
-
-        if (sdkUser) {
-          setUser({
-            id: sdkUser.id,
-            email: sdkUser.email || null,
-            username: sdkUser.username || null,
-            profilePictureUrl: sdkUser.profile_picture_url || sdkUser.profilePictureUrl || null,
-          });
-        }
-      } catch (error) {
-        console.error('[WhopIframe] Error getting user from SDK:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, [sdk, isInIframe]);
-
   const contextValue: WhopIframeContextValue = {
     user,
     isLoading,

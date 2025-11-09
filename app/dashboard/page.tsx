@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useWhopAuth } from '@/lib/hooks/useWhopIframeAuth';
 
 interface Course {
   id: string;
@@ -26,6 +27,7 @@ interface UserStats {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { creator, isLoading: isAuthLoading } = useWhopAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [stats, setStats] = useState<UserStats>({
     totalVideos: 0,
@@ -36,18 +38,20 @@ export default function DashboardPage() {
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
-  const creatorId = '00000000-0000-0000-0000-000000000001'; // Dev creator ID
-
-  // Fetch courses
+  // Fetch courses when creator is loaded
   useEffect(() => {
-    fetchCourses();
-    fetchStats();
-  }, []);
+    if (creator?.creatorId) {
+      fetchCourses();
+      fetchStats();
+    }
+  }, [creator?.creatorId]);
 
   const fetchCourses = async () => {
+    if (!creator?.creatorId) return;
+
     try {
       setIsLoadingCourses(true);
-      const response = await fetch(`/api/courses?creatorId=${creatorId}`);
+      const response = await fetch(`/api/courses?creatorId=${creator.creatorId}`);
       if (!response.ok) throw new Error('Failed to fetch courses');
 
       const data = await response.json();
@@ -98,6 +102,24 @@ export default function DashboardPage() {
     }
     return `${minutes}m`;
   };
+
+  // Show loading state while authenticating
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-cyan mx-auto"></div>
+          <p className="mt-4 text-text-muted">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to landing if not authenticated
+  if (!creator) {
+    router.push('/');
+    return null;
+  }
 
   // Skeleton loader for courses
   const CourseSkeleton = () => (

@@ -67,16 +67,10 @@ export function useWhopAuth(): UseWhopAuthResult {
     // If in iframe and user is loaded from SDK
     if (isInIframe && !iframeLoading) {
       if (iframeUser) {
-        // Use iframe SDK user - create creator object
-        console.log('[useWhopAuth] Using iframe SDK user:', iframeUser.id);
-        setCreator({
-          creatorId: iframeUser.id, // Use Whop user ID as creator ID
-          whopUserId: iframeUser.id,
-          email: iframeUser.email || '',
-          membershipValid: isAuthenticated,
-          currentPlan: 'basic', // Default plan for iframe users
-        });
-        setIsLoading(false);
+        // In iframe with user - fetch creator from API
+        // The /api/auth/me endpoint handles proxy headers for iframe context
+        console.log('[useWhopAuth] In iframe with SDK user, fetching creator from API');
+        fetchCreator();
       } else {
         // In iframe but no user - should not happen (Whop handles auth)
         console.log('[useWhopAuth] In iframe but no user from SDK');

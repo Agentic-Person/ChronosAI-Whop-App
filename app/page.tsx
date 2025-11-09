@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export default function LandingPage() {
   const router = useRouter();
-  const { creator, isLoading, isInIframe } = useWhopAuth();
+  const { creator, isLoading, isInIframe, error } = useWhopAuth();
 
   // Redirect to dashboard if authenticated (especially when in Whop iframe)
   useEffect(() => {
@@ -37,6 +37,26 @@ export default function LandingPage() {
       console.log('[Landing] ⏳ Not redirecting yet');
     }
   }, [creator, isLoading, isInIframe, router]);
+
+  // Show error state if authentication failed
+  if (error && !isLoading) {
+    return (
+      <div className="min-h-screen bg-bg-app flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-4">
+            <h2 className="text-xl font-bold text-red-400 mb-2">Authentication Error</h2>
+            <p className="text-text-secondary mb-4">{error.message || 'Failed to authenticate. Please try again.'}</p>
+          </div>
+          <a href="/api/whop/auth/login">
+            <button className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-accent-orange to-accent-orange/90 text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg">
+              Try Again
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading state while checking authentication
   if (isLoading) {
