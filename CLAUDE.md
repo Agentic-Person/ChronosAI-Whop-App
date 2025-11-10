@@ -4,33 +4,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Video Wizard** - An AI-powered video learning assistant for Whop creators in education and coaching. The app transforms passive video courses into interactive, personalized learning experiences with AI chat, automated quizzing, and personalized learning schedules.
+**Chronos** - An AI-powered video learning assistant for Whop creators in education and coaching. The app transforms passive video courses into interactive, personalized learning experiences with AI chat, automated transcription, and comprehensive analytics.
 
 **Core Value:** Save creators 10+ hours/week in student support while increasing course completion rates from 15% to 60%+
 
 **Target Market:** Educational creators on Whop (trading education 40%, e-commerce coaching 20%, real estate 15%, fitness 10%, AI training 15%)
 
+**Note:** This is the original project directory. The clean rebuild is in the `chronos/` directory.
+
 ## Tech Stack
 
-- **Frontend/Backend:** Next.js 14 (App Router), React, TypeScript, Tailwind CSS + shadcn/ui
-- **Database:** Supabase PostgreSQL with pgvector for vector embeddings (alternative: Neon)
-- **AI/ML:** Claude 3.5 Sonnet (chat, quiz generation), OpenAI (Whisper for transcription, embeddings for RAG)
-- **Video Storage:** S3/Cloudflare R2
-- **Authentication:** Whop OAuth + Supabase Auth
-- **State Management:** Zustand
-- **Automation:** n8n for webhooks and background workflows
-- **Deployment:** Vercel (with Edge Functions)
-- **Monitoring:** Sentry (errors), PostHog (analytics)
+- **Frontend/Backend:** Next.js 14 (App Router), React, TypeScript
+- **UI Framework:** Frosted UI (Whop's design system) + Tailwind CSS
+- **Charts/Analytics:** Recharts for data visualization
+- **Database:** Supabase PostgreSQL with pgvector for vector embeddings
+- **AI/ML:** Claude 3.5 Sonnet (RAG chat), OpenAI (Whisper for transcription, embeddings)
+- **Video Storage:** Supabase Storage
+- **Authentication:** Whop OAuth
+- **Background Jobs:** Inngest for video processing
+- **Caching:** Vercel KV (Redis)
+- **Rate Limiting:** Upstash
+- **Deployment:** Vercel
+- **Monitoring:** Sentry (errors)
 
 ## Core Features (MVP)
 
 1. **AI Chat with Video Search (RAG)** - Semantic search across video transcripts with timestamp citations
 2. **Automated Video Processing** - Bulk upload → transcription → chunking → vector embeddings
-3. **AI Quiz Generation** - Dynamic assessments from video content with scoring
-4. **Learning Calendar** - AI-generated personalized study schedules
-5. **Progress Tracking** - Student completion analytics and recommendations
-6. **Creator Dashboard** - Video management, student analytics, performance metrics
-7. **Whop Integration** - Native OAuth, membership sync, webhook handlers
+3. **Course Builder** - Drag-drop course organization with modules
+4. **Creator Analytics Dashboard** - Video performance, student engagement, usage metrics with interactive charts
+5. **Usage Limits** - Tier-based rate limiting and quotas
+6. **Whop Integration** - Native OAuth, membership sync, webhook handlers
+
+**Removed from Original Scope:**
+- ❌ AI Quiz Generation (future phase)
+- ❌ Learning Calendar (future phase)
+- ❌ Blockchain/Tokens (removed entirely)
+- ❌ Discord Integration (removed entirely)
+- ❌ Study Buddy Matching (removed entirely)
 
 ## Development Commands
 
@@ -237,12 +248,56 @@ WHOP_WEBHOOK_SECRET=    # For webhook signature verification
 - Whop API authentication flow
 - Database query performance (especially vector search)
 
-## Development Workflow (TDD)
+## Development Workflow: Parallel Agent Execution
+
+**PRIMARY DEVELOPMENT PATTERN**: Use Claude Code's Task tool with multiple agents running in parallel whenever features are independent.
+
+### Agent Orchestration Strategy
+
+Claude Code acts as the orchestrator. When you request work:
+1. I send **1 message with multiple Task tool calls**
+2. Each Task launches a specialized agent
+3. All agents work simultaneously
+4. I review all results and summarize progress
+
+### When to Use Parallel Agents
+
+Use parallel agents for:
+- Setting up project infrastructure (dependencies, configs, database schemas)
+- Building independent UI components
+- Creating separate API endpoints
+- Implementing different pipeline stages (upload, transcription, chunking, embedding)
+- Building analytics dashboard widgets
+- Any tasks without direct dependencies
+
+### Example: Phase 1 Setup
+
+Instead of sequential:
+1. Clone template
+2. Then install UI framework
+3. Then set up database
+4. Then configure Whop
+
+Do parallel:
+**Launch 4 agents in 1 message:**
+- Agent 1: Project scaffolding
+- Agent 2: UI framework setup
+- Agent 3: Database architecture
+- Agent 4: Whop integration
+
+### Benefits
+
+- **3-5x faster development** - Parallel execution vs sequential
+- **Better code isolation** - Each agent focuses on one concern
+- **Independent testing** - Test components separately
+- **Clearer separation** - Natural module boundaries
+
+### Development Workflow (TDD)
 
 This project follows Test-Driven Development principles:
 
 1. **Write tests first** for new features based on requirements
-2. **Implement** to pass tests
+2. **Implement** to pass tests (using parallel agents when possible)
 3. **Refactor** while maintaining test coverage
 4. **Validate** against success metrics
 
